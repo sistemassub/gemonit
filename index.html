@@ -2560,7 +2560,7 @@ function entRow(e,ro){
   const a=S.an[e.cod]||{}; const dec=a.fin?(a.aj?'aj':'ok'):''; const open=ui.openKey===e.cod; const p=previsto(e); const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0));
   const parts=entParts(e);
   return `<div class="arow erow ${open?'open':''} ${dec}" data-open="${e.cod}">${sDot(dec)}<div class="amain"><span class="aname"><span class="mono">${e.cod}</span> ${esc(e.nome)}</span>${iaChip(String(e.cod))}
-     <span class="emini">${p.meta?`<span class="${pm<100?'twn':'tok'}">Meta ${pm}%</span>`:'<span class="t-sub">Meta não importada</span>'}${p.dot?`<span class="${e.liq/p.dot<.9?'twn':'tok'}">Liquidado ${Math.round(100*e.liq/p.dot)}%</span>`:'<span class="t-sub">Sem dotação</span>'}<span class="eparts">${parts.map(([l,ok])=>`<i class="${ok?'ok':''}" title="${l}: ${ok?'preenchido':'falta'}">${ok?ic('check',10):''}${l}</i>`).join('')}</span></span></div>${decBtns(`data-edec2="${e.cod}" data-v`,dec,ro)}</div>
+</div>${decBtns(`data-edec2="${e.cod}" data-v`,dec,ro)}</div>
   ${open?entDet(e,a,dec,ro):''}`;
 }
 const umTxt=(u,v)=>{ const t=String(u||'').toLowerCase().replace('numero','número'); return t==='unidade'&&v!==1?'unidades':t; };
