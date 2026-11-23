@@ -1559,7 +1559,7 @@ body:not(.out){zoom:var(--z)}
 [data-theme="dark"] .rt.on{background:var(--surface-2);border-color:var(--accent)}
 .rt-n{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line);font-size:12px;font-weight:700}
 .rt.done .rt-n{background:var(--grad);border-color:transparent;color:#fff}.rt.on .rt-n{border-color:#3A3B44;background:#1E1F25;color:#FFDA00}.rt.on.done .rt-n{background:var(--grad);color:#fff}
-.rt-t{display:flex;flex-direction:column;min-width:0}.rt-t b{font-size:13px}.rt-t small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt-t{display:flex;flex-direction:column;min-width:0}.rt-t b{font-size:13px}.rt-t small{font-size:11.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
 .rt-b{display:block;height:4px;border-radius:4px;background:var(--ring-bg);overflow:hidden;margin-top:5px}.rt-b i{display:block;height:100%;background:var(--grad)}
 .rt-c{display:flex;flex-direction:column;align-items:flex-end;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}.rt-c em{font-style:normal;font-size:10.5px;color:#9A7400}.rt.on .rt-c em{color:#FFDA00}
 .sec{padding:20px 22px}
@@ -1590,7 +1590,7 @@ body:not(.out){zoom:var(--z)}
 .f-top{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px}
 .ft-res,.ft-num{border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;background:var(--surface-2)}
 .ft-res dl{margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px}
-.ft-res dl div{min-width:0}.ft-res dt{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.ft-res dd{margin:1px 0 0;font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ft-res dl div{min-width:0}.ft-res dt{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.ft-res dd{margin:1px 0 0;font-size:12.5px;font-weight:500;overflow-wrap:anywhere}
 .ft-res dd::first-letter{text-transform:uppercase}
 .ft-num{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;align-content:start}.ft-num h5{grid-column:1/-1;margin-bottom:0}
 .ftn{display:flex;flex-direction:column;min-width:0}.ftn>span:first-child{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
@@ -1693,6 +1693,10 @@ body:not(.out){zoom:var(--z)}
 .adm-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:16px}
 .adm-k{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 14px}.adm-k div{display:flex;flex-direction:column}.adm-k b{font-size:22px}.adm-k small{color:var(--faint)}
 .adm-t td select,.adm-t td input:not([type=checkbox]){width:100%;min-width:110px}.adm-t td{vertical-align:middle}.adm-t .chk{display:inline-flex;gap:6px;align-items:center;font-size:13px}
+.ini-res{border:1px solid var(--line-2);border-radius:14px;background:var(--surface-2);padding:12px 14px;margin:4px 0 14px}.ini-res dl{margin:0 0 10px;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}.ini-res dt{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.ini-res dd{margin:1px 0 0;font-size:13px;font-weight:500;overflow-wrap:anywhere}
+.ir-k{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;border-top:1px solid var(--line-2);padding-top:10px}.ir-k b{font-size:20px;display:block}.ir-k small{font-size:12px;color:var(--muted)}
+.ia-cp{display:flex;gap:10px;align-items:flex-start;margin:8px 0;padding:8px 10px;border-radius:10px;background:var(--surface-2)}.ia-cp small{display:block;color:var(--muted)}
+@media(max-width:900px){.ini-res dl,.ir-k{grid-template-columns:1fr}}
 .lg-load{color:#fff;opacity:.8;font-size:14px;text-align:center;margin-top:40vh}
 </style>
 </head>
@@ -1852,7 +1856,7 @@ function orgOf(h){ if(h.org) return h.org; if(h.ent==='ciclo') return +h.ref.spl
 function audit(ent,ref,label,acao,changes,org){
   const ts=nowIso();
   if(!changes||!changes.length){ S.H.unshift({id:nid(),ts,user:S.user,ent,ref:String(ref),label,acao,campo:'',de:'',para:'',org}); return; }
-  changes.forEach(c=>S.H.unshift({id:nid(),ts,user:S.user,ent,ref:String(ref),label,acao,campo:c.campo,de:c.de,para:c.para,org}));
+  changes.forEach(c=>{ const x={id:nid(),ts,user:S.user,ent,ref:String(ref),label,acao,campo:c.campo,de:c.de,para:c.para,org}; if(c.k!==undefined){ x.k=c.k; x.v0=c.v0; } if(c.snap!==undefined) x.snap=c.snap; S.H.unshift(x); });
 }
 const ENT_L={ciclo:'Ciclo do órgão',analise:'Análise de entrega',pendencia:'Pendência/risco',interacao:'Interação',melhoria:'Melhoria SIPLAM/BI',orgao:'Cadastro do órgão',campo:'Análise de campo (institucional/iniciativa)'};
 /* próximo passo sugerido para cada órgão da carteira */
@@ -1883,7 +1887,7 @@ const USERS=[{login:'gerente',nome:'Gerência GEMONIT',role:'gerente'},...MON.ma
 const isGer=()=>S.sess?.role==='gerente';
 const myOrgs=()=>isGer()?[]:S.orgs.filter(o=>o.mon===S.user);
 const canSee=()=>true;                                   // consulta geral: todos podem ver todos os órgãos
-const canEdit=cod=>!isGer()&&OB[cod]?.mon===S.user;     // só o monitor responsável altera a análise
+const canEdit=cod=>{ const p=ME?.papel; if(p==='admin'||p==='gerente') return !!OB[cod]; if(p==='monitor') return OB[cod]?.mon===S.user||OB[cod]?.sub===S.user; return false; };
 const intro=t=>{ const el=$('#psub'); if(el&&t) el.innerHTML=t; return ''; };
 
 function loginScreen(msg){
@@ -2248,7 +2252,7 @@ function pgConsulta(){
    8c. PÁGINA DO ÓRGÃO
    Situação · Envio · Acompanhamento (resumo) → abas: Análise institucional | Análise das iniciativas | Pendências | Acompanhamento
    ============================================================ */
-function histItem(h){ return `<div class="h"><div><b>${esc(h.user)}</b> · ${esc(h.acao.toLowerCase())}${h.campo?` de <b>${esc(h.campo)}</b>`:''}</div>${h.campo&&(h.de||h.para)?`<div class="t-sub">${h.de?`<span class="diff">${esc(String(h.de).slice(0,70))}</span> → `:''}<span class="diffn">${esc(String(h.para).slice(0,110))}</span></div>`:''}<small>${fdt(h.ts)}</small></div>`; }
+function histItem(h){ return `<div class="h"><div><b>${esc(h.user)}</b> · ${esc(h.acao.toLowerCase())}${h.campo?` de <b>${esc(h.campo)}</b>`:''}</div>${h.campo&&(h.de||h.para)?`<div class="t-sub">${h.de?`<span class="diff">${esc(String(h.de).slice(0,70))}</span> → `:''}<span class="diffn">${esc(String(h.para).slice(0,110))}</span></div>`:''}<small>${fdt(h.ts)}${canRev(h)?` · <button class="lnk" data-act="hRev:${h.id}">Voltar</button>`:''}</small></div>`; }
 const sDot=s=>`<span class="sd ${s}" title="${s==='ok'?'Está OK':s==='aj'?'Pedir ajuste':'Falta analisar'}">${s==='ok'?ic('check',11):s==='aj'?'!':''}<span class="sr">${s==='ok'?'OK':s==='aj'?'Ajuste':'Falta analisar'}</span></span>`;
 const BK={desc:['Descrição analítica','doc'],quant:['Quantitativo','chart'],qual:['Qualitativo','chat']};
 const blk=(k,title,desc,body,extra='')=>`<section class="blk blk-${k}"><header class="bh"><span class="bk">${ic(BK[k][1],14)} ${BK[k][0]}</span><div class="bt"><h3>${title}</h3><p>${desc}</p></div>${extra?`<div class="bx">${extra}</div>`:''}</header><div class="bb">${body}</div></section>`;
@@ -2326,13 +2330,13 @@ function pgAnalise(cod){
 }
 /* Entrada da Análise: escolher o órgão (gerência vê a equipe toda) */
 function pgAnaliseLista(base){
-  const cy=S.ciclos[S.cyc]; const f=ui.al||(ui.al={mon:'',sit:''});
+  const cy=S.ciclos[S.cyc]; const f=ui.al||(ui.al={mon:'',sit:'',org:''});
   setHead('Análise',isGer()?`Andamento da análise de cada órgão no ciclo de <b>${MESESL[S.cyc-1].toLowerCase()}/${ANO}</b>. Abra um órgão para ver a análise do monitor.`:`Escolha um dos seus órgãos para analisar. Os que estão em análise aparecem primeiro.`,'');
-  const rows=base.filter(o=>cy[o.cod]?.st!=='encerrado'&&(!f.mon||o.mon===f.mon)&&(!f.sit||(cy[o.cod]?.st||'aguardando')===f.sit)).map(o=>{const p=progOrg(o.cod); const ins=nivelStatus('inst',o.cod); return {o,c:cy[o.cod]||{},p,ins,pc:Math.round(100*p.done/Math.max(1,p.n))};});
+  const rows=base.filter(o=>cy[o.cod]?.st!=='encerrado'&&(!f.mon||o.mon===f.mon)&&(!f.org||String(o.cod)===String(f.org))&&(!f.sit||(cy[o.cod]?.st||'aguardando')===f.sit)).map(o=>{const p=progOrg(o.cod); const ins=nivelStatus('inst',o.cod); return {o,c:cy[o.cod]||{},p,ins,pc:Math.round(100*p.done/Math.max(1,p.n))};});
   const pend=rows.filter(r=>['analise','reanalise'].includes(r.c.st)&&r.p.done<r.p.n);
   let page2='';
   const top=`${!isGer()&&pend.length?`<div class="al-next">${pend.slice(0,3).map(r=>`<a class="al-n" href="#analise-${r.o.cod}"><span class="a2-k">${ic('doc',13)} ${r.p.done?'Continuar':'Começar'}</span><b>${esc(r.o.sig)}</b><small>${r.p.n-r.p.done} itens para analisar</small><span class="al-g">${ring2(r.pc,46,ST_COL[r.c.st])}</span></a>`).join('')}</div>`:''}
-  <div class="card toolbar tb2">${isGer()?sel('al-mon',MON,f.mon,'Toda a equipe','Monitor'):''}${sel('al-sit',SIT_ORDER.filter(k=>k!=='encerrado').map(k=>[k,SIT[k].l]),f.sit,'Todas','Situação')}<span class="t-sub" style="align-self:center;margin-left:auto">${rows.length} órgão(s)</span></div>`;
+  <div class="card toolbar tb2">${sel('al-org',base.slice().sort((a,b)=>a.sig.localeCompare(b.sig)).map(o=>[o.cod,o.sig]),f.org||'','Todos os órgãos','Órgão')}${isGer()?sel('al-mon',MON,f.mon,'Toda a equipe','Monitor'):''}${sel('al-sit',SIT_ORDER.filter(k=>k!=='encerrado').map(k=>[k,SIT[k].l]),f.sit,'Todas','Situação')}<span class="t-sub" style="align-self:center;margin-left:auto">${rows.length} órgão(s)</span></div>`;
   const cols=isGer()?'algrid':'algrid nm';
   page2=`<div class="card al-l"><div class="al-r al-h ${cols}"><span>Órgão</span>${isGer()?'<span>Monitor</span>':''}<span>Situação</span><span>Institucional</span><span>Análise do ciclo</span><span class="r">Com ajuste</span><span></span></div>
   ${rows.map(r=>`<a class="al-r ${cols}" href="#analise-${r.o.cod}"><span class="al-o"><b>${esc(r.o.sig)}</b><small>${esc(r.o.nome)}</small></span>${isGer()?`<span class="eq-n sm">${av(r.o.mon)}${esc(r.o.mon)}</span>`:''}<span>${sitPill(r.c.st)}</span><span class="num">${r.ins.d}/${r.ins.n} campos</span><span class="al-p"><span class="eq-p"><span class="hr-t"><i style="width:${r.pc}%"></i></span><b>${r.pc}%</b></span><small class="t-sub">${r.p.done} de ${r.p.n} itens</small></span><span class="r num ${r.p.aj?'twn':''}">${r.p.aj||'—'}</span><span class="r"><span class="btn sm">${canEdit(r.o.cod)?'Analisar':'Ver'}</span></span></a>`).join('')||'<div class="empty">Nenhum órgão.</div>'}</div>`;
@@ -2350,15 +2354,23 @@ function secInst(cod,ro){
     <details class="nums"><summary>${ic('chart',14)} Números do órgão para conferir o texto <span>${alc}/${ents.length} metas alcançadas · ${dot?Math.round(100*liq/dot)+'% liquidado':'sem dotação'}${sal>0?' · saldo '+brlC(sal):''}</span></summary><div class="nums-b">${(()=>{const t=instTab(cod,ro); const i=t.indexOf('<div class="qgroups">'); const j=t.indexOf('</p>',t.indexOf('class="srcnote"',i)); return i>-1?t.slice(i,j+4):'';})()}</div></details>
   </div>`;
 }
+function iniResumo(g){ const e0=g.ents[0]||{}; const P=g.ents.map(e=>({e,p:previsto(e)})); const cm=P.filter(x=>x.p.meta);
+  const pct=cm.length?Math.round(cm.reduce((s,x)=>s+Math.min(100,100*x.e.fisAc/x.p.meta),0)/cm.length):null;
+  const alc=cm.filter(x=>x.e.fisAc>=x.p.meta).length; const dot=P.reduce((s,x)=>s+(x.p.dot||0),0), liq=g.ents.reduce((s,e)=>s+(e.liq||0),0); const loc=g.ents.reduce((s,e)=>s+(e.nloc||0),0);
+  return `<div class="ini-res"><dl><div class="w2"><dt>Programa</dt><dd>${e0.prog?`${e0.prog} · ${esc(e0.pnome)}`:'—'}</dd></div><div class="w2"><dt>Iniciativa</dt><dd>${g.ini} · ${esc(g.nome)}</dd></div></dl>
+    <div class="ir-k"><div><b>${pct==null?'—':pct+'%'}</b><small>do pactuado foi entregue${cm.length?` (média de ${cm.length} entrega${cm.length>1?'s':''} com meta${loc?`, somando ${nf0.format(loc)} municípios/localidades`:''})`:' · importe o print para ter a meta'}</small></div>
+    <div><b>${cm.length?`${alc}/${cm.length}`:'—'}</b><small>metas alcançadas</small></div>
+    <div><b>${dot?Math.round(100*liq/dot)+'%':liq?brlC(liq):'—'}</b><small>${dot?`liquidado (${brlC(liq)} de ${brlC(dot)})`:liq?'liquidado':'sem dotação importada'}</small></div></div></div>`; }
 function secIni(cod,g,ro){
   if(!g) return '<div class="card sec"><div class="empty">Sem iniciativas.</div></div>';
   const ns=nivelStatus('ini',g.ini); const fin=g.ents.filter(e=>S.an[e.cod]?.fin).length;
   return `<div class="card sec">${secHead(`Iniciativa ${g.ini}`,esc(g.nome),ns.d+fin,INI_F.length+g.ents.length,ro?'':`<button class="btn sm" data-act="imp:${cod}:${g.ini}">${ic('db',13)} Importar planilha</button>`)}
-    <div class="sub-l">Campos da iniciativa</div>
-    <div class="alist">${INI_F.map(f=>fieldRow(cod,'ini',g.ini,f,ro)).join('')}</div>
+    ${iniResumo(g)}
     <div class="sub-l">Entregas · ${fin} de ${g.ents.length} finalizadas <small>Qualitativa, quantitativa e finalizada, como na planilha</small></div>
     <div class="alist">${g.ents.map(e=>entRow(e,ro)).join('')}</div>
-    <p class="srcnote">${ic('db',12)} Realizado: relatório do SIPLAM. Previsto (meta e dotação): simulado neste protótipo.</p>
+    <div class="sub-l">Resultado / impacto e observações da iniciativa</div>
+    <div class="alist">${INI_F.map(f=>fieldRow(cod,'ini',g.ini,f,ro)).join('')}</div>
+    <p class="srcnote">${ic('db',12)} Realizado: relatório do SIPLAM. Previsto (meta e dotação): print do SIPLAM ou planilha.</p>
   </div>`;
 }
 /* ----- Análise institucional ----- */
@@ -2396,7 +2408,7 @@ function iniTab(cod,ro){
   const qrows=cur.ents.map(e=>{ const p=previsto(e); const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0)), pl=p.dot?Math.round(100*e.liq/p.dot):null; const a=S.an[e.cod]||{};
     return `<article class="qe"><header><span class="mono">${e.cod} · ${esc((e.stm||'').toLowerCase())}</span><b title="${esc(e.nome)}">${esc(e.nome)}</b></header>
       <details class="eres-d"><summary>${ic('book',13)} Resumo da entrega no SIPLAM</summary>${entResumo(e,true)}</details>
-      <div class="qe-m"><div class="qe-k"><span>Físico <small>(${esc(e.um.toLowerCase())})</small></span><b>${nf.format(e.fisAc)} <em>de ${fmtMeta(p.meta)}</em></b><span class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></span><small class="${pm<100?'twn':'tok'}">${pm}% da meta</small></div>
+      <div class="qe-m"><div class="qe-k"><span>Físico <small>(${esc(e.um.toLowerCase())})</small></span><b>${nf.format(e.fisAc)} <em>de ${fmtMeta(p.meta)}</em></b><span class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></span><small class="${pm<100?'twn':'tok'}">${p.meta?`${pm}% do pactuado entregue`:'meta pactuada não importada'}${e.nloc>1?` · soma dos ${e.nloc} municípios/localidades`:''}</small></div>
         <div class="qe-k"><span>Financeiro</span>${p.dot?`<dl class="qe-dl"><div><dt>Dotação autorizada</dt><dd>${brlC(p.dot)}</dd></div><div><dt>Liquidado</dt><dd>${brlC(e.liq)}</dd></div>${e.saldo>0?`<div><dt>Saldo a distribuir</dt><dd class="twn">${brlC(e.saldo)}</dd></div>`:''}</dl><span class="mbar ${pl<90?'w':''}"><i style="width:${Math.min(100,pl)}%"></i></span><small class="${pl<90?'twn':'tok'}">${pl}% liquidado</small>`:`<b class="t-sub" style="font-size:14px">Sem dotação própria</b>`}</div></div>
       <input class="qin" ${ro?'disabled':''} data-ef="${e.cod}|qt" value="${esc(a.qt||'')}" placeholder="Observação sobre os números" aria-label="Observação sobre os números da entrega ${e.cod}"></article>`; }).join('');
   return `<div class="tabhead"><div><h2>Análise das iniciativas</h2><p>Escolha uma iniciativa. A análise qualitativa e quantitativa é feita em cada entrega, como na planilha.</p></div>
@@ -2437,6 +2449,14 @@ function iaInput(key){
   const [nv,ref,fid]=key.split('|'); const F=(nv==='inst'?INST_F:INI_F).find(f=>f.id===fid); const txt=nv==='inst'?instTexto(OB[+ref],fid):iniTexto(+ref,fid);
   return {tipo:nv==='inst'?'institucional':'iniciativa',nome:F.t,hint:F.hint,ck:F.ck||[],txt:txt||''};
 }
+function compatFF(n){ if(!n) return null; const pf=n.meta?Math.round(100*n.realizado/n.meta):null;
+  if(n.realizado===0&&n.liquidado>0) return {status:'incompativel',motivo:`Há ${brlC(n.liquidado)} liquidado sem físico realizado.`};
+  if(n.realizado>0&&n.liquidado===0&&n.dotacao>0) return {status:'atencao',motivo:'Há físico realizado, mas nada liquidado da dotação.'};
+  if(!n.dotacao&&!n.liquidado) return {status:'na',motivo:'Entrega sem dotação própria: não há financeiro para comparar.'};
+  if(pf!=null&&n.pliq!=null&&Math.abs(pf-n.pliq)>40) return {status:'atencao',motivo:`Físico em ${pf}% da meta e financeiro em ${n.pliq}% da dotação: diferença grande.`};
+  if(n.saldo>0) return {status:'atencao',motivo:`Saldo a distribuir de ${brlC(n.saldo)} nos meses.`};
+  if(pf==null||n.pliq==null) return {status:'na',motivo:'Falta a meta prevista ou a dotação para comparar (importe o print).'};
+  return {status:'compativel',motivo:`Físico em ${pf}% da meta e financeiro em ${n.pliq}% da dotação.`}; }
 function iaRegras(inp){
   const t=norm(inp.txt); const n=inp.num; const itens=[];
   if(!t.trim()) return {veredito:'ajuste',resumo:'O campo está em branco no SIPLAM.',itens:inp.ck.map(c=>({item:c,status:'nao',motivo:'Sem texto para avaliar.'})),sugestao:`Preencher o campo "${inp.nome}" conforme a orientação do SIPLAM.`};
@@ -2471,9 +2491,11 @@ ${inp.ck.map((c,i)=>`${i+1}. ${c}`).join('\n')}
 ${inp.num?`Números da entrega até ${MESL()}: meta prevista ${inp.num.meta} (${inp.num.um}), realizado ${inp.num.realizado} (${inp.num.pmeta}% da meta); dotação ${inp.num.dotacao||'sem dotação própria'}; liquidado ${inp.num.liquidado}${inp.num.pliq!=null?` (${inp.num.pliq}%)`:''}; saldo a distribuir ${inp.num.saldo}.`:''}
 Texto enviado pelo órgão (entre <texto>):
 <texto>${inp.txt||'(em branco)'}</texto>
-Responda só com JSON: {"veredito":"ok"|"atencao"|"ajuste","resumo":"uma frase","itens":[{"item":"texto do item","status":"atende"|"parcial"|"nao"|"na","motivo":"curto"}],"sugestao":"texto curto do pedido de ajuste ao órgão, vazio se estiver ok"}`;
+${inp.num?'Avalie também se a execução física e a financeira são compatíveis entre si (ex.: físico alto com pouca liquidação, liquidação sem físico, percentuais muito diferentes, saldo a distribuir) e se o texto explica isso.':''}
+Responda só com JSON: {"veredito":"ok"|"atencao"|"ajuste","resumo":"uma frase","itens":[{"item":"texto do item","status":"atende"|"parcial"|"nao"|"na","motivo":"curto"}],${inp.num?'"compat":{"status":"compativel"|"atencao"|"incompativel"|"na","motivo":"curto"},':''}"sugestao":"texto curto do pedido de ajuste ao órgão, vazio se estiver ok"}`;
     r=await SAMPLE.json(prompt,{modelTier:'quick'}); via='ia'; }catch(e){ r=null; console.warn('IA indisponível',e); } }
   if(!r||!r.veredito) r=iaRegras(inp);
+  if(inp.num){ const cr=compatFF(inp.num); if(!r.compat||!r.compat.status) r.compat=cr; else r.compatRegra=cr; }
   S.ia[key]={...r,via,ts:nowIso()}; save(); render(true);
 }
 async function iaBatch(keys){ for(const k of keys){ if(!S.ia?.[k]||S.ia[k].loading) await iaRun(k,true); } render(true); toast('Pré-análise concluída. Confira cada item antes de decidir.'); }
@@ -2485,9 +2507,10 @@ function iaBox(k,ro){
   if(r.loading) return `<div class="iabox"><b>${ic('spark',14)} Pré-análise com IA</b><div class="ia-load"><i></i><i></i><i></i> lendo o texto e os requisitos…</div></div>`;
   const v=IA_V[r.veredito]||IA_V.atencao; const st={atende:['Atende','ok'],parcial:['Parcial','warn'],nao:['Não atende','crit'],na:['Não se aplica','na']};
   return `<div class="iabox v-${v[1]}"><div class="ia-h"><b>${ic('spark',14)} Pré-análise com IA</b><span class="iac ${v[1]}">${v[0]}</span></div><p class="ia-r">${esc(r.resumo||'')}</p>
+    ${r.compat?(()=>{ const C={compativel:['Compatível','ok'],atencao:['Conferir','warn'],incompativel:['Incompatível','crit'],na:['Sem dados','na']}[r.compat.status]||['Conferir','warn']; return `<div class="ia-cp"><span class="iat ${C[1]}">${C[0]}</span><span><b>Físico × financeiro</b><small>${esc(r.compat.motivo||'')}</small></span></div>`; })():''}
     <ul class="ia-l">${(r.itens||[]).map(x=>{const q=st[x.status]||st.parcial; return `<li><span class="iat ${q[1]}">${q[0]}</span><span><b>${esc(x.item)}</b><small>${esc(x.motivo||'')}</small></span></li>`;}).join('')}</ul>
     ${r.sugestao?`<div class="ia-s"><small>Sugestão de pedido de ajuste</small><p>${esc(r.sugestao)}</p>${ro?'':`<button class="btn ghost sm" data-act="iaUse:${k}">Usar no pedido de ajuste</button>`}</div>`:''}
-    <div class="ia-f">${ic('info',12)} ${r.via==='ia'?'Gerada pelo Claude.':'Gerada por regras simples nesta versão sem conexão.'} É só uma sugestão: leia o texto e decida você. ${ro?'':`<button class="lnk" data-act="iaRun:${k}">Refazer</button>`}</div></div>`;
+    <div class="ia-f">${ic('info',12)} ${r.via==='ia'?'Gerada pela IA (Gemini).':'Gerada por regras simples (a IA não respondeu).'} É só uma sugestão: leia o texto e decida você. ${ro?'':`<button class="lnk" data-act="iaRun:${k}">Refazer</button>`}</div></div>`;
 }
 
 /* Resumo da entrega como aparece no SIPLAM */
@@ -2505,7 +2528,7 @@ function entRow(e,ro){
   const a=S.an[e.cod]||{}; const dec=a.fin?(a.aj?'aj':'ok'):''; const open=ui.openKey===e.cod; const p=previsto(e); const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0));
   const parts=entParts(e);
   return `<div class="arow erow ${open?'open':''} ${dec}" data-open="${e.cod}">${sDot(dec)}<div class="amain"><span class="aname"><span class="mono">${e.cod}</span> ${esc(e.nome)}</span>${iaChip(String(e.cod))}
-     <span class="emini"><span class="${pm<100?'twn':'tok'}">Meta ${pm}%</span>${p.dot?`<span class="${e.liq/p.dot<.9?'twn':'tok'}">Liquidado ${Math.round(100*e.liq/p.dot)}%</span>`:'<span class="t-sub">Sem dotação</span>'}<span class="eparts">${parts.map(([l,ok])=>`<i class="${ok?'ok':''}" title="${l}: ${ok?'preenchido':'falta'}">${ok?ic('check',10):''}${l}</i>`).join('')}</span></span></div>${decBtns(`data-edec2="${e.cod}" data-v`,dec,ro)}</div>
+     <span class="emini">${p.meta?`<span class="${pm<100?'twn':'tok'}">Meta ${pm}%</span>`:'<span class="t-sub">Meta não importada</span>'}${p.dot?`<span class="${e.liq/p.dot<.9?'twn':'tok'}">Liquidado ${Math.round(100*e.liq/p.dot)}%</span>`:'<span class="t-sub">Sem dotação</span>'}<span class="eparts">${parts.map(([l,ok])=>`<i class="${ok?'ok':''}" title="${l}: ${ok?'preenchido':'falta'}">${ok?ic('check',10):''}${l}</i>`).join('')}</span></span></div>${decBtns(`data-edec2="${e.cod}" data-v`,dec,ro)}</div>
   ${open?entDet(e,a,dec,ro):''}`;
 }
 function entDet(e,a,dec,ro){
@@ -2513,12 +2536,12 @@ function entDet(e,a,dec,ro){
   const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0)), pl=p.dot?Math.round(100*e.liq/p.dot):null; const k=String(e.cod);
   const sec=(n,t,body,cls='')=>`<section class="fs ${cls}"><h5><span>${n}</span>${t}</h5>${body}</section>`;
   const fis=(e.fis||[]).slice(0,S.cyc), mx=Math.max(1,...fis);
-  const res=[['Programa',`${e.prog} · ${e.pnome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não'],['Regionalização',`${(e.estr||'').toLowerCase()}${e.nloc?` · ${e.nloc} loc.`:''}`],['Período',`${e.dini||'—'}${e.dfim?' a '+e.dfim:''}`]];
+  const res=[['Programa',e.prog?`${e.prog} · ${e.pnome}`:'—'],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não'],['Regionalização',`${(e.estr||'').toLowerCase()}${e.nloc?` · ${e.nloc} loc.`:''}`],['Período',`${e.dini||'—'}${e.dfim?' a '+e.dfim:''}`]];
   return `<div class="adet ficha2">
    <div class="f-top">
      <section class="ft-res"><h5><span>1</span>Resumo no SIPLAM</h5><dl>${res.map(([k,v])=>`<div><dt>${k}</dt><dd title="${esc(v)}">${esc(v)}</dd></div>`).join('')}</dl></section>
      <section class="ft-num"><h5><span>2</span>Números até ${MESESL[S.cyc-1].toLowerCase()}</h5>
-       <div class="ftn"><span>Físico</span><b>${nf.format(e.fisAc)} <em>de ${fmtMeta(p.meta)} ${esc((e.um||'').toLowerCase())}</em></b><span class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></span><small class="${pm<100?'twn':'tok'}">${pm}% da meta</small></div>
+       <div class="ftn"><span>Físico</span><b>${nf.format(e.fisAc)} <em>de ${fmtMeta(p.meta)} ${esc((e.um||'').toLowerCase())}</em></b><span class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></span><small class="${pm<100?'twn':'tok'}">${p.meta?`${pm}% do pactuado entregue`:'meta pactuada não importada'}${e.nloc>1?` · soma dos ${e.nloc} municípios/localidades`:''}</small></div>
        <div class="ftn"><span>Financeiro</span>${p.dot?`<b>${brlC(e.liq)} <em>de ${brlC(p.dot)}</em></b><span class="mbar ${pl<90?'w':''}"><i style="width:${Math.min(100,pl)}%"></i></span><small class="${pl<90?'twn':'tok'}">${pl}% liquidado${e.saldo>0?` · saldo ${brlC(e.saldo)}`:''}</small>`:'<b class="t-sub" style="font-size:13px">Sem dotação própria</b>'}</div>
        ${fis.length?`<div class="ftn spk"><span>Físico mês a mês</span><div>${fis.map((v,i)=>`<i style="height:${Math.max(6,Math.round(100*v/mx))}%" title="${MESESL[i]}: ${nf.format(v)}"></i>`).join('')}</div></div>`:''}</section>
    </div>
@@ -2537,7 +2560,7 @@ function entDet(e,a,dec,ro){
      </section>
    </div></div>`;
 }
-function entSet(cod,patch,campos){ const e=EBY[cod]; const old=S.an[cod]||{}; S.an[cod]={ql:'',qt:'',adeq:'',cat:'',aj:false,fin:false,ck:{},...old,...patch,data:hoje(),por:S.user}; if(campos&&campos.length) audit('analise',cod,`Entrega ${cod} · ${OB[e.org].sig}`,old.fin?'Edição':'Criação',campos,e.org); save(); }
+function entSet(cod,patch,campos){ const e=EBY[cod]; const old=S.an[cod]||{}; if(campos) campos=campos.map(c=>({...c,snap:JSON.parse(JSON.stringify(old))})); S.an[cod]={ql:'',qt:'',adeq:'',cat:'',aj:false,fin:false,ck:{},...old,...patch,data:hoje(),por:S.user}; if(campos&&campos.length) audit('analise',cod,`Entrega ${cod} · ${OB[e.org].sig}`,old.fin?'Edição':'Criação',campos,e.org); save(); }
 function entDecide(cod,v){
   const e=EBY[cod]; const a=S.an[cod]||{}; const cur=a.fin?(a.aj?'aj':'ok'):''; const lbl={'':'Não avaliado',ok:'Está OK',aj:'Pedir ajuste'};
   const nd=cur===v?'':v; const patch={fin:!!nd,aj:nd==='aj'};
@@ -2546,14 +2569,14 @@ function entDecide(cod,v){
   entSet(cod,patch,[{campo:'Decisão',de:lbl[cur],para:lbl[nd]}]);
 }
 function fieldDecide2(k,v,org){
-  const s={...ckGet(k)}; s.ck={...s.ck}; const old=s.dec; s.dec=s.dec===v?'':v;
+  const snap=JSON.parse(JSON.stringify(ckGet(k))); const s={...ckGet(k)}; s.ck={...s.ck}; const old=s.dec; s.dec=s.dec===v?'':v;
   const [nivel,ref,fid]=k.split('|'); const F=(nivel==='inst'?INST_F:INI_F).find(f=>f.id===fid);
   if(s.dec==='aj'&&old==='ok') s.ck={};
   if(s.dec==='ok'&&!Object.keys(s.ck).length) F.ck.forEach((c,i)=>s.ck[i]=true);
   if(s.dec==='aj'&&!s.com) s.com=(S.ia?.[k]?.sugestao)||pedido(F.ck.filter((c,i)=>!s.ck[i]));
   if(s.dec==='aj') ui.openKey=k; else if(ui.openKey===k) ui.openKey=null;
   S.ck[k]=s; const lbl={'':'Não avaliado',ok:'Está OK',aj:'Pedir ajuste'};
-  audit('campo',k,`${OB[org].sig} · ${nivel==='inst'?'Institucional':'Iniciativa '+ref} · ${F.t}`,'Edição',[{campo:'Decisão',de:lbl[old],para:lbl[s.dec]}],org); save();
+  audit('campo',k,`${OB[org].sig} · ${nivel==='inst'?'Institucional':'Iniciativa '+ref} · ${F.t}`,'Edição',[{campo:'Decisão',de:lbl[old],para:lbl[s.dec],snap}],org); save();
 }
 /* ----- Pendências (cartões com próximo passo) ----- */
 function prazoTxt(p){ if(!p.prazo) return 'Sem prazo definido'; const d=diasPara(p.prazo); if(!isOpen(p)) return fdate(p.prazo); if(d<0) return `${fdate(p.prazo)} · venceu há ${-d} dia(s)`; if(d===0) return `${fdate(p.prazo)} · vence hoje`; return `${fdate(p.prazo)} · em ${d} dia(s)`; }
@@ -2816,7 +2839,7 @@ function readForm(root,fields,base){
   return v;
 }
 function fmtVal(fd,x){ if(fd.t==='bool') return x?'Sim':'Não'; if(fd.opts){const o=(typeof fd.opts==='function'?fd.opts():fd.opts).find(o=>Array.isArray(o)?String(o[0])===String(x):o===x); if(o) return Array.isArray(o)?o[1]:o;} if(fd.t==='date') return x?fdate(x):''; return x==null?'':String(x); }
-function diffs(fields,a,b){ const r=[]; fields.forEach(fd=>{ const x=a[fd.k]??(fd.t==='bool'?false:''), y=b[fd.k]??(fd.t==='bool'?false:''); if(String(x)!==String(y)) r.push({campo:fd.l,de:fmtVal(fd,x),para:fmtVal(fd,y)}); }); return r; }
+function diffs(fields,a,b){ const r=[]; fields.forEach(fd=>{ const x=a[fd.k]??(fd.t==='bool'?false:''), y=b[fd.k]??(fd.t==='bool'?false:''); if(String(x)!==String(y)) r.push({campo:fd.l,de:fmtVal(fd,x),para:fmtVal(fd,y),k:fd.k,v0:x}); }); return r; }
 function validate(root,fields,v){ let ok=true; fields.forEach(fd=>{ if(fd.req&&(v[fd.k]===''||v[fd.k]==null)&&(!fd.show||fd.show(v))){ ok=false; root.querySelector(`[data-k="${fd.k}"]`)?.classList.add('err'); } }); if(!ok) toast('Preencha os campos obrigatórios marcados com *.'); return ok; }
 let DR=null;
 function openDrawer(o){ DR={...o,value:{...o.value}}; drawDrawer(); $('#drawer').classList.add('show'); $('#scrim').classList.add('show'); $('#drawer').setAttribute('aria-hidden','false'); setTimeout(()=>$('#drawer [data-k]')?.focus(),230); }
@@ -2840,7 +2863,7 @@ function editCiclo(cod,m=S.cyc){
 }
 function setSit(cod,k,silent){
   const c=S.ciclos[S.cyc][cod]; if(!c||c.st===k) return; const old=c.st; c.st=k; if(k!=='aguardando'&&!c.env){ c.env=true; c.data=c.data||hoje(); }
-  audit('ciclo',`${S.cyc}:${cod}`,`${OB[cod].sig} · ciclo de ${MESESL[S.cyc-1].toLowerCase()}`,'Edição',[{campo:'Situação',de:SIT[old].l,para:SIT[k].l}],cod); save();
+  audit('ciclo',`${S.cyc}:${cod}`,`${OB[cod].sig} · ciclo de ${MESESL[S.cyc-1].toLowerCase()}`,'Edição',[{campo:'Situação',de:SIT[old].l,para:SIT[k].l,k:'st',v0:old}],cod); save();
   if(!silent) toast(`${OB[cod].sig}: ${SIT[old].l} → ${SIT[k].l}`,()=>{ c.st=old; audit('ciclo',`${S.cyc}:${cod}`,`${OB[cod].sig} · ciclo de ${MESESL[S.cyc-1].toLowerCase()}`,'Edição',[{campo:'Situação',de:SIT[k].l,para:SIT[old].l}],cod); save(); render(true); });
 }
 const ORG_FIELDS=[{k:'mon',l:'Responsável (GEMONIT)',t:'select',opts:MON,req:1},{k:'sub',l:'Substituto',t:'select',opts:MON,req:1},{k:'focal',l:'Ponto focal no órgão',req:1,full:1}];
@@ -2979,17 +3002,25 @@ function impParse(rows,cod,ini){
   if(h<0) return {erro:'Não encontrei a linha de títulos (precisa ter as colunas ENTREGA e ANÁLISE QUALITATIVA, como na aba do órgão da planilha).'};
   const H=rows[h].map(N); const col=f=>H.findIndex(f);
   const cE=col(x=>x.startsWith('entrega')), cQl=col(x=>x.includes('qualitativa')), cQt=col(x=>x.includes('quantitativa')), cF=col(x=>x.includes('finalizada')), cD=col(x=>x.includes('data da analise'));
-  const ok=[],ign=[]; const ents=(EBO[cod]||[]).filter(e=>!ini||e.ini===ini);
-  rows.slice(h+1).forEach(r=>{ const m=String(r[cE]??'').match(/(\d{4,6})/); if(!m) return; const e=ents.find(x=>x.cod===+m[1]); if(!e){ ign.push(m[1]); return; }
+  const ok=[],ign=[],novas=[]; const ents=(EBO[cod]||[]).filter(e=>!ini||e.ini===ini);
+  const cI=col(x=>x.startsWith('iniciativa')); let iniAt=null; let inst=null;
+  rows.slice(0,h).forEach(r=>{ const i=r.findIndex(c=>N(c).trim()==='institucional'); if(i>-1){ const v=N(r[i+1]).trim(); if(v) inst=/parcial/.test(v)?'Parcial':/^ok|complet/.test(v)?'Completo':'Não preenchido'; } });
+  const cn=v=>{ const m=String(v??'').replace(/\s+/g,' ').trim().match(/^(\d{3,6})\s*-?\s*(.*)$/); return m?[+m[1],m[2].trim()]:null; };
+  rows.slice(h+1).forEach(r=>{ if(cI>-1){ const x=cn(r[cI]); if(x) iniAt=x; }
+    const m=String(r[cE]??'').match(/(\d{4,6})/); if(!m) return; let e=ents.find(x=>x.cod===+m[1]);
+    if(!e){ if(EBY[+m[1]]&&EBY[+m[1]].org!==cod){ ign.push(m[1]); return; } if(ini&&iniAt&&iniAt[0]!==ini){ ign.push(m[1]); return; }
+      const nm=cn(r[cE])?.[1]||''; const ii=iniAt||[ini||0,'']; e=novas.find(x=>x.cod===+m[1]);
+      if(!e){ e={cod:+m[1],nome:nm.toUpperCase(),org:cod,ini:ii[0],inome:String(ii[1]).toUpperCase(),prog:0,pnome:'',um:'',cls:'',tipo:'',acum:'N',estr:'',liq:0,saldo:0,fis:Array(12).fill(0),fin:Array(12).fill(0),stm:'',nloc:0,dini:'',dfim:'',origem:'planilha'}; novas.push(e); } }
     const ql=String(r[cQl]??'').trim(), qt=cQt>-1?String(r[cQt]??'').trim():'', fin=cF>-1&&/^(1|s|sim|x|ok)$/i.test(String(r[cF]??'').trim());
-    if(ql||qt||fin) ok.push({e,ql,qt,fin,aj:fin&&ql&&!/^ok\b/i.test(ql)}); });
-  return {ok,ign};
+    if(ql||qt||fin) ok.push({e,ql,qt,fin,aj:fin&&!!ql&&!/\bok\b/i.test(ql)}); });
+  return {ok,ign,novas,inst};
 }
+const SHEET_ALIAS={'CASA CIVIL':['CASA_CIVIL'],'VICE-GOV':['VICE_GOV'],'LAGO AZUL':['LAGO_AZUL'],PMGO:['PM'],CBMGO:['CBM'],PCGO:['PC'],MPGO:['MP'],'DPE-GO':['DEFENSORIA'],TJGO:['TJ'],'TCM-GO':['TCM'],'TCE-GO':['TCE']};
 function openImport(cod,ini){
   const o=OB[cod]; ui.imp={cod,ini:ini||null,res:null};
   $('#modalBox').className='mb lg';
   $('#modalBox').innerHTML=`<h3>${ic('db',18)} Importar planilha · ${esc(o.sig)}${ini?` · iniciativa ${ini}`:''}</h3>
-   <p>Envie a aba do órgão da planilha de governança (.xlsx ou .csv). O sistema lê as colunas <b>ENTREGA</b>, <b>Análise qualitativa</b>, <b>Análise quantitativa</b> e <b>Finalizada (1)</b> e preenche as entregas com o mesmo código.</p>
+   <p>Envie a planilha de governança (.xlsx) ou a aba do órgão (.csv). O sistema acha a aba do órgão e lê <b>INICIATIVA</b>, <b>ENTREGAS</b>, <b>Análise qualitativa</b>, <b>Análise quantitativa</b>, <b>Finalizada (1)</b> e a linha <b>INSTITUCIONAL</b>. Entregas que ainda não estão no sistema são criadas.</p>
    <label class="drop"><input type="file" id="impF" accept=".xlsx,.xls,.csv" data-imp="1"><span>${ic('plus',18)} Escolher arquivo</span><small>As análises que você já fez só são substituídas nas entregas que vierem preenchidas na planilha.</small></label>
    <div id="impRes"></div>
    <div class="act"><button class="btn" data-act="mClose">Cancelar</button><button class="btn pri" id="impOk" data-act="impApply" disabled>Importar</button></div>`;
@@ -2997,16 +3028,19 @@ function openImport(cod,ini){
 }
 async function impFile(f){
   const box=$('#impRes'); box.innerHTML='<p class="t-sub">Lendo o arquivo…</p>'; let rows=[];
-  try{ if(/\.csv$/i.test(f.name)) rows=csvRows(await f.text()); else { const X=await loadXLSX(); const wb=X.read(await f.arrayBuffer()); const o=OB[ui.imp.cod]; const nm=wb.SheetNames.find(n=>semAcento(n).toUpperCase().replace(/[^A-Z]/g,'')===semAcento(o.sig).toUpperCase().replace(/[^A-Z]/g,''))||wb.SheetNames[0]; rows=X.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}); } }
+  try{ if(/\.csv$/i.test(f.name)) rows=csvRows(await f.text()); else { const X=await loadXLSX(); const wb=X.read(await f.arrayBuffer()); const o=OB[ui.imp.cod]; const K=x=>semAcento(x).toUpperCase().replace(/[^A-Z]/g,''); const al=[o.sig,...(SHEET_ALIAS[o.sig]||[])].map(K); const nm=wb.SheetNames.find(n=>al.includes(K(n)))||(wb.SheetNames.length===1?wb.SheetNames[0]:null); if(!nm){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não achei a aba de ${esc(o.sig)} na planilha. Abas encontradas: ${esc(wb.SheetNames.slice(0,40).join(', '))}.</span></div>`; return; } rows=X.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}); } }
   catch(e){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não consegui abrir o arquivo. Se for .xlsx sem internet, salve a aba como .csv e tente de novo.</span></div>`; return; }
   const r=impParse(rows,ui.imp.cod,ui.imp.ini); ui.imp.res=r;
   if(r.erro){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>${esc(r.erro)}</span></div>`; return; }
-  box.innerHTML=`<div class="imp-sum"><b>${r.ok.length}</b> entrega(s) com análise para importar${r.ign.length?` · <span class="twn">${r.ign.length} código(s) não pertencem a este órgão${ui.imp.ini?'/iniciativa':''} e serão ignorados</span>`:''}</div>
+  box.innerHTML=`<div class="imp-sum">${r.novas.length?`<b>${r.novas.length}</b> entrega(s) nova(s) serão criadas · `:''}<b>${r.ok.length}</b> entrega(s) com análise para importar${r.inst?` · institucional: <b>${esc(r.inst)}</b>`:''}${r.ign.length?` · <span class="twn">${r.ign.length} código(s) não pertencem a este órgão${ui.imp.ini?'/iniciativa':''} e serão ignorados</span>`:''}</div>
     <div class="imp-l">${r.ok.slice(0,40).map(x=>`<div><span class="mono">${x.e.cod}</span><b>${esc(x.e.nome)}</b><small>${x.fin?(x.aj?'Finalizada · com ajuste':'Finalizada · OK'):'Em andamento'}${x.ql?' · '+esc(x.ql.slice(0,80)):''}</small></div>`).join('')}</div>`;
-  $('#impOk').disabled=!r.ok.length;
+  $('#impOk').disabled=!(r.ok.length||r.novas.length||r.inst);
 }
-function impApply(){ const r=ui.imp?.res; if(!r?.ok?.length) return; r.ok.forEach(x=>{ const ch=[]; const a=S.an[x.e.cod]||{}; if(x.ql&&x.ql!==a.ql) ch.push({campo:'Análise qualitativa',de:a.ql||'',para:x.ql}); if(x.qt&&x.qt!==a.qt) ch.push({campo:'Análise quantitativa',de:a.qt||'',para:x.qt}); const patch={}; if(x.ql) patch.ql=x.ql; if(x.qt) patch.qt=x.qt; if(x.fin){ patch.fin=true; patch.aj=x.aj; ch.push({campo:'Finalizada',de:a.fin?'Sim':'Não',para:'Sim (importado)'}); } entSet(x.e.cod,patch,ch.length?ch:[{campo:'Importação',de:'',para:'planilha'}]); });
-  $('#modal').classList.remove('show'); render(true); toast(`${r.ok.length} entrega(s) importada(s) da planilha. Tudo ficou no histórico.`); }
+function impApply(){ const r=ui.imp?.res; if(!r) return; const cod=ui.imp.cod;
+  if(r.novas.length){ r.novas.forEach(ne=>{ if(!EBY[ne.cod]){ S.extraE.push(ne); addExtraE(ne); } }); index(); audit('orgao',cod,`${OB[cod].sig} · entregas`,'Criação',[{campo:'Entregas criadas pela planilha',de:'',para:r.novas.map(x=>x.cod).join(', ')}],cod); }
+  if(r.inst){ const c=S.ciclos[CUR][cod]; if(c&&c.inst!==r.inst){ const v0=c.inst; c.inst=r.inst; audit('ciclo',`${CUR}:${cod}`,`${OB[cod].sig} · institucional`,'Edição',[{campo:'Texto institucional',de:v0,para:r.inst,k:'inst',v0}],cod); } }
+  r.ok.forEach(x=>{ const ch=[]; const a=S.an[x.e.cod]||{}; if(x.ql&&x.ql!==a.ql) ch.push({campo:'Análise qualitativa',de:a.ql||'',para:x.ql}); if(x.qt&&x.qt!==a.qt) ch.push({campo:'Análise quantitativa',de:a.qt||'',para:x.qt}); const patch={}; if(x.ql) patch.ql=x.ql; if(x.qt) patch.qt=x.qt; if(x.fin){ patch.fin=true; patch.aj=x.aj; ch.push({campo:'Finalizada',de:a.fin?'Sim':'Não',para:'Sim (importado)'}); } entSet(x.e.cod,patch,ch.length?ch:[{campo:'Importação',de:'',para:'planilha'}]); });
+  $('#modal').classList.remove('show'); render(true); save(); toast(`Planilha importada: ${r.novas.length} entrega(s) criada(s), ${r.ok.length} análise(s). Tudo ficou no histórico.`); }
 
 /* ===== Anexos (imagens, PDF, documentos) ===== */
 let ANX={};
@@ -3127,7 +3161,7 @@ function pgHist(){
   const desc={mes:'Situação de cada órgão mês a mês: se enviou, quando, se a descrição analítica veio preenchida, quanto foi analisado e os entraves. Substitui as abas <b>LINKS GOV</b> de cada mês da planilha.',log:'Toda alteração feita no sistema: quem fez, quando, o valor anterior e o novo. Nada fica sem registro.',lix:'Itens excluídos. Nada é apagado de vez: o que está aqui pode ser restaurado.'};
   const scope=`<div class="card toolbar"><div class="seg" role="group" aria-label="Quais órgãos"><button class="${f.mine?'on':''}" data-act="hisMine:1" ${isGer()?'hidden':''}>Meus órgãos</button><button class="${!f.mine?'on':''}" data-act="hisMine:0" ${isGer()?'hidden':''}>Todos os órgãos</button></div>${sel('h-org',S.orgs.filter(o=>!f.mine||canEdit(o.cod)).slice().sort((a,b)=>a.sig.localeCompare(b.sig)).map(o=>[o.cod,o.sig]),f.org,'Todos','Órgão')}${!f.mine?sel('h-mon',MON,f.mon,'Todos','Responsável'):''}
     ${f.tab==='mes'?`<div class="seg" role="group" aria-label="Formato"><button class="${f.view==='mes'?'on':''}" data-act="hisView:mes">Um mês</button><button class="${f.view==='grade'?'on':''}" data-act="hisView:grade">Todos os meses</button></div>${f.view==='mes'?sel('h-m',CICLOS.map(m=>[m,MESESL[m-1]+'/'+ANO]),f.m,null,'Mês'):''}`:''}
-    ${f.tab==='log'?`<div class="fld grow"><label for="h-q">Buscar</label><input id="h-q" data-f="h-q" value="${esc(f.q)}" placeholder="Registro, campo ou valor"></div>${sel('h-user',MON.concat(['Gerência GEMONIT']),f.user,'Todos','Quem alterou')}${sel('h-ent',Object.entries(ENT_L),f.ent,'Todos','Tipo')}`:''}</div>`;
+    ${f.tab==='log'?`<div class="fld grow"><label for="h-q">Buscar</label><input id="h-q" data-f="h-q" value="${esc(f.q)}" placeholder="Registro, campo ou valor"></div>${sel('h-user',[...new Set(S.H.map(x=>x.user).filter(Boolean))].sort(),f.user,'Todos','Quem alterou')}${sel('h-ent',Object.entries(ENT_L),f.ent,'Todos','Tipo')}`:''}</div>`;
   let body='';
   if(f.tab==='mes'&&f.view==='mes'){ const cy=S.ciclos[f.m]||{};
     body=`<div class="card"><div class="tw"><table class="htab"><thead><tr><th>Órgão</th><th>Enviou?</th><th>Data do envio</th><th>D/A preenchida?</th><th class="r">% análise</th><th>Responsável</th><th>Substituto</th><th>Situação</th><th>Observações / entraves</th></tr></thead><tbody>${orgs.map(o=>{const c=cy[o.cod]||{}; const pc=+f.m===CUR?(()=>{const q=progOrg(o.cod); return Math.round(100*q.done/Math.max(1,q.n));})():Math.round(orgPct(o.cod,+f.m)); return `<tr class="click" data-go="#orgao-${o.cod}"><td><div class="t-main">${esc(o.sig)}</div><div class="t-sub mono">${o.cod}</div></td><td>${c.env?'Sim':'<span class="t-sub">Não</span>'}</td><td class="num">${c.env&&c.data?fdate(c.data):'—'}</td><td>${c.da?'Sim':'<span class="t-sub">Não</span>'}</td><td class="r"><div class="mini"><b class="num">${pc}%</b><span class="oc-bar"><i style="width:${pc}%"></i></span></div></td><td>${esc(o.mon)}</td><td class="t-sub">${esc(o.sub||'—')}</td><td>${sitPill(c.st)}</td><td style="max-width:320px"><span class="t-sub clamp">${esc(c.obs||c.instObs||'')||'—'}</span></td></tr>`;}).join('')||'<tr><td colspan="9" class="empty">Nenhum órgão.</td></tr>'}</tbody></table></div></div>`; }
@@ -3143,9 +3177,20 @@ function pgHist(){
   $('#psub').innerHTML=desc[f.tab];
   page(`<div class="tabs page-tabs" role="tablist">${tab('mes','Controle mensal',null)}${tab('log','Alterações no sistema',logs.length)}${tab('lix','Itens excluídos',trash.length)}</div>${scope}${body}`);
 }
+function canRev(h){ if(!h||h.acao==='Reversão'||(h.k===undefined&&h.snap===undefined)) return false; if(ME?.papel==='consulta') return false; return h.org==null?true:canEdit(h.org); }
+function revertH(id){ const h=S.H.find(x=>String(x.id)===String(id)); if(!canRev(h)) return;
+  confirmBox('Voltar esta alteração?',`<b>${esc(h.label)}</b><br>${esc(h.campo||'')} volta para: <b>${esc(String(h.de||'(vazio)').slice(0,160))}</b>`,'Voltar',()=>{
+    const ch=[{campo:h.campo,de:h.para,para:h.de}]; let ok=true;
+    if(h.ent==='analise'){ const cod=+h.ref; if(h.snap&&Object.keys(h.snap).length) S.an[cod]=h.snap; else delete S.an[cod]; }
+    else if(h.ent==='campo'){ if(h.snap&&(h.snap.dec||h.snap.com||Object.keys(h.snap.ck||{}).length)) S.ck[h.ref]=h.snap; else delete S.ck[h.ref]; }
+    else if(h.ent==='ciclo'){ const [m,c]=h.ref.split(':'); const o=S.ciclos[m]?.[c]; if(o) o[h.k]=h.v0; else ok=false; }
+    else if(h.ent==='orgao'){ const o=OB[+h.ref]; if(o&&h.k) o[h.k]=h.v0; else ok=false; }
+    else { const L={pendencia:S.P,interacao:S.I,melhoria:S.M}[h.ent]; const it=L&&L.find(x=>String(x.id)===String(h.ref)); if(it&&h.k) it[h.k]=h.v0; else ok=false; }
+    if(!ok){ toast('Não foi possível voltar: o registro não existe mais.'); return; }
+    audit(h.ent,h.ref,h.label,'Reversão',ch,h.org); save(); render(true); toast('Alteração desfeita. A volta também ficou no histórico.'); }); }
 function histTable(list){
   if(!list.length) return '<div class="empty">Nenhum registro.</div>';
-  return `<div class="tw"><table><thead><tr><th>Quando</th><th>Quem</th><th>Registro</th><th>Ação</th><th>Campo</th><th>Antes</th><th>Depois</th></tr></thead><tbody>${list.slice(0,300).map(h=>`<tr><td class="num" style="white-space:nowrap">${fdt(h.ts)}</td><td style="white-space:nowrap">${av(h.user)} ${esc(h.user)}</td><td style="max-width:240px"><div class="t-main">${esc(h.label)}</div><div class="t-sub">${ENT_L[h.ent]||h.ent}</div></td><td>${pill(h.acao,h.acao==='Exclusão'?'crit':h.acao==='Criação'?'ok':h.acao==='Restauração'?'vio':'info')}</td><td>${esc(h.campo||'—')}</td><td style="max-width:220px">${h.de?`<span class="diff">${esc(String(h.de).slice(0,120))}</span>`:'<span class="t-sub">—</span>'}</td><td style="max-width:260px">${h.para?`<span class="diffn">${esc(String(h.para).slice(0,160))}</span>`:'<span class="t-sub">—</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  return `<div class="tw"><table><thead><tr><th>Quando</th><th>Quem</th><th>Registro</th><th>Ação</th><th>Campo</th><th>Antes</th><th>Depois</th><th></th></tr></thead><tbody>${list.slice(0,300).map(h=>`<tr><td class="num" style="white-space:nowrap">${fdt(h.ts)}</td><td style="white-space:nowrap">${av(h.user)} ${esc(h.user)}</td><td style="max-width:240px"><div class="t-main">${esc(h.label)}</div><div class="t-sub">${ENT_L[h.ent]||h.ent}</div></td><td>${pill(h.acao,h.acao==='Exclusão'?'crit':h.acao==='Criação'?'ok':h.acao==='Restauração'?'vio':'info')}</td><td>${esc(h.campo||'—')}</td><td style="max-width:220px">${h.de?`<span class="diff">${esc(String(h.de).slice(0,120))}</span>`:'<span class="t-sub">—</span>'}</td><td style="max-width:260px">${h.para?`<span class="diffn">${esc(String(h.para).slice(0,160))}</span>`:'<span class="t-sub">—</span>'}</td><td class="r">${canRev(h)?`<button class="btn sm" data-act="hRev:${h.id}" title="Desfazer e voltar ao valor anterior">${ic('back',13)} Voltar</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function softDelete(kind,item,label,ent){ confirmBox('Mover para a lixeira?',`<b>${esc(label)}</b> sai das listas, mas pode ser restaurado em Histórico e lixeira.`,'Mover para a lixeira',()=>{ S[kind]=S[kind].filter(x=>x!==item); S.trash.unshift({tid:nid(),kind,item,label,ent,by:S.user,ts:nowIso()}); audit(ent,item.id,label,'Exclusão',[],item.org??null); save(); closeDrawer(); render(true); toast('Item movido para a lixeira.',()=>restoreAt(0)); }); }
 function restoreAt(i){ const t=S.trash[i]; if(!t) return; S[t.kind].push(t.item); S.trash.splice(i,1); audit(t.ent,t.item.id,t.label,'Restauração',[],t.item.org??null); save(); render(true); toast('Item restaurado.'); }
@@ -3172,7 +3217,7 @@ $('#pal').addEventListener('click',e=>{ const it=e.target.closest('[data-pi]'); 
 /* ============================================================
    16. EVENTOS
    ============================================================ */
-const FMAP={'p-org':['pen','org'],'c-q':['ciclo','q'],'c-mon':['ciclo','mon'],'c-sit':['ciclo','sit'],'d-mon':['dash','mon'],'al-mon':['al','mon'],'al-sit':['al','sit'],'e-mon':['env','mon'],'d-eixo':['dash','eixo'],'p-q':['pen','q'],'p-tipo':['pen','tipo'],'p-crit':['pen','crit'],'p-st':['pen','st'],'p-mon':['pen','mon'],'r-q':['rev','q'],'r-cat':['rev','cat'],'r-st':['rev','st'],'r-mon':['rev','mon'],'h-q':['his','q'],'h-user':['his','user'],'h-ent':['his','ent'],'h-acao':['his','acao'],'h-org':['his','org'],'h-mon':['his','mon'],'h-m':['his','m']};
+const FMAP={'p-org':['pen','org'],'c-q':['ciclo','q'],'c-mon':['ciclo','mon'],'c-sit':['ciclo','sit'],'d-mon':['dash','mon'],'al-mon':['al','mon'],'al-org':['al','org'],'al-sit':['al','sit'],'e-mon':['env','mon'],'d-eixo':['dash','eixo'],'p-q':['pen','q'],'p-tipo':['pen','tipo'],'p-crit':['pen','crit'],'p-st':['pen','st'],'p-mon':['pen','mon'],'r-q':['rev','q'],'r-cat':['rev','cat'],'r-st':['rev','st'],'r-mon':['rev','mon'],'h-q':['his','q'],'h-user':['his','user'],'h-ent':['his','ent'],'h-acao':['his','acao'],'h-org':['his','org'],'h-mon':['his','mon'],'h-m':['his','m']};
 let typT, svT;
 document.addEventListener('input',e=>{
   const t=e.target;
@@ -3205,7 +3250,7 @@ document.addEventListener('click',e=>{
   const a=e.target.closest('[data-act]'); if(!a) return;
   const [act,...args]=a.dataset.act.split(':'); const p1=args[0], p2=args[1];
   const A={
-    pal:()=>openPal(), logout:()=>confirmBox('Sair do sistema?','Você voltará para a tela de login.','Sair',logout),
+    pal:()=>openPal(), hRev:()=>revertH(p1), logout:()=>confirmBox('Sair do sistema?','Você voltará para a tela de login.','Sair',logout),
     resetData:()=>confirmBox('Restaurar dados de demonstração?','As alterações feitas neste navegador serão descartadas.','Restaurar',()=>{ const ss=S.sess, us=S.user; S=fresh(); S.sess=ss; S.user=us; index(); save(); syncTop(); render(); toast('Dados restaurados.'); }),
     side:()=>{ const m=document.documentElement.classList.toggle('side-min'); try{localStorage.setItem('gemonit-menu',m?'min':'');}catch(e){} },
     theme:()=>{ applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); if(parse().base==='painel') render(true); },
@@ -3275,7 +3320,7 @@ function syncTop(){
   $('#usrBox').innerHTML=`${isGer()?`<span class="avatar" style="background:#009E3C;color:#fff">${ini(S.user)}</span>`:av(S.user)}<div class="un"><b>${esc(S.user)}</b><small>${{admin:'Administração',gerente:'Gerência',monitor:'Monitor',consulta:'Consulta'}[ME?.papel]||''}</small></div><button class="gbtn" data-act="logout" title="Sair do sistema">Sair</button>`;
 }
 $('#cycSel').addEventListener('change',e=>{ S.cyc=+e.target.value; render(true); });
-document.addEventListener('change',e=>{ const t=e.target; if(t.dataset&&t.dataset.instobs){ const c=S.ciclos[S.cyc][+t.dataset.instobs]; if(c&&c.instObs!==t.value){ const old=c.instObs||''; c.instObs=t.value; audit('ciclo',`${S.cyc}:${t.dataset.instobs}`,`${OB[+t.dataset.instobs].sig} · institucional`,'Edição',[{campo:'Comentário sobre o institucional',de:old,para:t.value}],+t.dataset.instobs); save(); } } });
+document.addEventListener('change',e=>{ const t=e.target; if(t.dataset&&t.dataset.instobs){ const c=S.ciclos[S.cyc][+t.dataset.instobs]; if(c&&c.instObs!==t.value){ const old=c.instObs||''; c.instObs=t.value; audit('ciclo',`${S.cyc}:${t.dataset.instobs}`,`${OB[+t.dataset.instobs].sig} · institucional`,'Edição',[{campo:'Comentário sobre o institucional',de:old,para:t.value,k:'instObs',v0:old}],+t.dataset.instobs); save(); } } });
 document.addEventListener('change',e=>{ if(e.target.dataset&&e.target.dataset.act2==='swAn'){ location.hash='#analise-'+e.target.value; } });
 document.addEventListener('change',e=>{ const d=e.target.dataset||{}; if(d.imp&&e.target.files[0]) impFile(e.target.files[0]); if(d.print&&e.target.files[0]) prFile(e.target.files[0]); if(d.anx&&e.target.files.length) anxAdd(d.anx,[...e.target.files]); });
 document.addEventListener('input',e=>{ if(e.target.dataset&&e.target.dataset.anq){ ui.anq=e.target.value; const pos=e.target.selectionStart; render(true); const i=document.getElementById('anq'); if(i){ i.focus(); i.setSelectionRange(pos,pos);} } });
