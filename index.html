@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GEMONIT · Governança do Monitoramento</title>
+<title>GEMONIT</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon-180.png">
@@ -2169,7 +2169,7 @@ function renderNav(r){
   const venc=visP().filter(vencida).length, ab=visP().filter(isOpen).length;
   $('#nav').innerHTML=(isGer()?NAV_GER:NAV_MON).map((n,i,a)=>`${!i||a[i-1][3]!==n[3]?`<span class="nsec">${n[3]}</span>`:''}<a href="#${n[0]}" class="${cur===n[0]?'on':''}" id="nav-${n[0]}" title="${n[1]}">${ic(n[2],17)}<span class="nl">${n[1]}</span>${n[0]==='meus'&&consNL()?`<span class="cnt y" title="Considerações não lidas">${consNL()}</span>`:''}${n[0]==='pendencias'&&ab?`<span class="cnt ${venc?'al':''}" title="${ab} abertas, ${venc} vencidas">${ab}</span>`:''}</a>`).join('');
 }
-function setHead(t,sub,crumbs){ $('#ptitle').closest('.phead')?.classList.remove('ph-min'); $('#ptitle').textContent=t; $('#psub').innerHTML=sub||''; $('#crumbs').innerHTML=crumbs||''; $('#pextra').innerHTML=''; document.title=t+' · GEMONIT'; }
+function setHead(t,sub,crumbs){ $('#ptitle').closest('.phead')?.classList.remove('ph-min'); $('#ptitle').textContent=t; $('#psub').innerHTML=sub||''; $('#crumbs').innerHTML=crumbs||''; $('#pextra').innerHTML=''; document.title='GEMONIT'; }
 const page=h=>{ $('#pagebox').innerHTML=h; };
 function parse(){ const r=(location.hash||'').slice(1)||(isGer()?'painel':'meus'); const p=r.split('-'); return {r,base:p[0],a:+p[1]||0}; }
 function render(keep){
