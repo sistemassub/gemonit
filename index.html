@@ -1704,6 +1704,8 @@ body:not(.out){zoom:var(--z)}
 .ft-meta{font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}.ft-meta b{font-size:12px;font-family:var(--font)}
 .ftn.spk>.spk2{display:grid;align-items:end;grid-template-columns:repeat(12,1fr);gap:4px;height:74px;margin-top:6px}.sk{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:0}.ftn.spk .sk i{display:block;flex:none;width:100%;border-radius:3px;background:var(--grad);max-height:42px}.sk em{font-style:normal;font-size:9.5px;color:var(--muted);white-space:nowrap}.sk small{font-size:9.5px;color:var(--faint);margin-top:2px}
 .quote{white-space:pre-line}.da{margin-top:10px}.ficha2 .da .quote{max-height:none}.da summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.gst-box{border:1px solid var(--line-2);border-radius:14px;padding:10px 12px;background:var(--surface-2);margin-bottom:12px}.gst-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:2px 2px 8px}.gst-h b{font-size:13px}.gst-h small{font-size:12px;color:var(--muted)}
+.gst-l{margin:10px 0 2px 18px;padding-left:14px;border-left:2px solid var(--line)}.gst-lh{font-size:12px;font-weight:600;color:var(--muted);margin:0 0 6px;display:flex;align-items:center;gap:6px}
 .lg-load{color:#fff;opacity:.8;font-size:14px;text-align:center;margin-top:40vh}
 </style>
 </head>
@@ -2373,8 +2375,12 @@ function secIni(cod,g,ro){
   const ns=nivelStatus('ini',g.ini); const fin=g.ents.filter(e=>S.an[e.cod]?.fin).length;
   return `<div class="card sec">${secHead(`Iniciativa ${g.ini}`,esc(g.nome),ns.d+fin,INI_F.length+g.ents.length,ro?'':`<button class="btn sm" data-act="imp:${cod}:${g.ini}">${ic('db',13)} Importar planilha</button>`)}
     ${iniResumo(g)}
-    <div class="sub-l">Entregas · ${fin} de ${g.ents.length} finalizadas <small>Qualitativa, quantitativa e finalizada, como na planilha</small></div>
-    <div class="alist">${g.ents.map(e=>entRow(e,ro)).join('')}</div>
+    ${(()=>{ const gs=gestaoDe(g.ents); if(!gs) return `<div class="sub-l">Entregas · ${fin} de ${g.ents.length} finalizadas <small>Qualitativa, quantitativa e finalizada</small></div><div class="alist">${g.ents.map(e=>entRow(e,ro)).join('')}</div>`;
+      const lig=g.ents.filter(e=>e!==gs);
+      return `<div class="sub-l">Entregas · ${fin} de ${g.ents.length} finalizadas</div>
+      <div class="gst-box"><div class="gst-h">${ic('ent',14)} <b>Gestão da iniciativa</b><small>Concentra a execução financeira (${p0(gs)}). As entregas abaixo são serviços ligados a ela.</small></div>
+        <div class="alist">${entRow(gs,ro)}</div>
+        ${lig.length?`<div class="gst-l"><div class="gst-lh">↳ Serviços ligados a essa gestão · ${lig.length}</div><div class="alist">${lig.map(e=>entRow(e,ro)).join('')}</div></div>`:''}</div>`; })()}
     <div class="sub-l">Resultado / impacto e observações da iniciativa</div>
     <div class="alist">${INI_F.map(f=>fieldRow(cod,'ini',g.ini,f,ro)).join('')}</div>
     <p class="srcnote">${ic('db',12)} Realizado: relatório do SIPLAM. Previsto (meta e dotação): print do SIPLAM ou planilha.</p>
@@ -2523,7 +2529,7 @@ function iaBox(k,ro){
 /* Resumo da entrega como aparece no SIPLAM */
 function entResumo(e,compact){
   const fis=(e.fis||[]).slice(0,S.cyc), mx=Math.max(1,...fis);
-  const it=[['Programa',`${e.prog} · ${e.pnome}`],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade de medida',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não'],['Regionalização',`${(e.estr||'').toLowerCase()}${e.nloc?` · ${e.nloc} localidade(s)`:''}`],['Período',`${e.dini||'—'}${e.dfim?' a '+e.dfim:''}`]];
+  const it=[['Programa',`${e.prog} · ${e.pnome}`],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade de medida',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não']];
   return `<div class="eres ${compact?'c':''}"><div class="lab">${ic('book',13)} Resumo da entrega no SIPLAM</div>
     <dl>${it.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
     ${fis.length?`<div class="espark" aria-label="Execução física mês a mês"><span>Execução física mês a mês</span><div>${fis.map((v,i)=>`<i style="height:${Math.max(4,Math.round(100*v/mx))}%" title="${MESESL[i]}: ${nf.format(v)}"><small>${MESES[i][0]}</small></i>`).join('')}</div></div>`:''}</div>`;
@@ -2531,6 +2537,9 @@ function entResumo(e,compact){
 const AN_L2={ql:'Texto do ajuste',qt:'Observação sobre os números',adeq:'Adequação no PPA',cat:'Categoria da alteração'};
 function entParts(e){ const a=S.an[e.cod]||{}; const dec=a.fin?(a.aj?'aj':'ok'):'';
   return [['Texto do órgão',!!entTexto(e)],['Qualitativa',!!(a.ql&&a.ql.trim())],['Quantitativa',!!(a.qt&&a.qt.trim())],['Decisão',!!dec]]; }
+const X_OCULTO=/^(LOCALIDADES?|REGIAO LOCALIDADE|REGIÃO LOCALIDADE|ESTIMADO PPA|DATA INICIO ENTREGA|DATA INÍCIO ENTREGA|DATA FIM ENTREGA|ESTRAT[ÉE]GIA DE MONITORAMENTO|PER[IÍ]ODO|REGIONALIZA[ÇC][ÃA]O)$/i;
+function gestaoDe(ents){ if(!ents||ents.length<2) return null; return ents.find(e=>semAcento(String(e.cls||'')).toUpperCase().trim()==='GESTAO')||null; }
+const p0=e=>{ const d=previsto(e).dot; return d?`${brlC(e.liq)} de ${brlC(d)} liquidado`:`${brlC(e.liq)} liquidado`; };
 function entRow(e,ro){
   const a=S.an[e.cod]||{}; const dec=a.fin?(a.aj?'aj':'ok'):''; const open=ui.openKey===e.cod; const p=previsto(e); const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0));
   const parts=entParts(e);
@@ -2544,13 +2553,13 @@ function entDet(e,a,dec,ro){
   const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0)), pl=p.dot?Math.round(100*e.liq/p.dot):null; const k=String(e.cod);
   const sec=(n,t,body,cls='')=>`<section class="fs ${cls}"><h5><span>${n}</span>${t}</h5>${body}</section>`;
   const fis=(e.fis||[]).slice(0,S.cyc), mx=Math.max(1,...fis);
-  const px=previsto(e); const res=[['Programa',e.prog?`${e.prog} · ${e.pnome}`:'—'],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não'],['Regionalização',`${(e.estr||'').toLowerCase()}${e.nloc?` · ${e.nloc} loc.`:''}`],['Período',`${e.dini||'—'}${e.dfim?' a '+e.dfim:''}`]];
+  const px=previsto(e); const _gs=gestaoDe(E.filter(x=>x.ini===e.ini&&x.org===e.org)); const res=[...(_gs?[['Papel na iniciativa',_gs===e?'Gestão da iniciativa (concentra o financeiro)':`Serviço ligado à gestão ${_gs.cod}`]]:[]),['Programa',e.prog?`${e.prog} · ${e.pnome}`:'—'],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não']];
   return `<div class="adet ficha2">
    <div class="f-top">
-     <section class="ft-res"><h5><span>1</span>Resumo no SIPLAM</h5><dl>${[...res,...(px.acao?[['Ação orçamentária',px.acao]]:[]),...(px.est?[['Estimado PPA',brl(px.est)]]:[]),...(px.liqm?[['Liquidações monitoradas',brl(px.liqm)]]:[]),...(px.realInf||px.real?[['Realizado na consolidação',nf.format(px.real||0)+((px.real||0)===e.fisAc?' (confere com o SIPLAM)':' (SIPLAM: '+nf.format(e.fisAc)+')')]]:[]),...(!px.dot&&px.dotInf?[['Dotação autorizada','R$ 0,00']]:[]),...Object.entries(px.x||{}).map(([k,v])=>[k.charAt(0)+k.slice(1).toLowerCase(),/^-?\d+(\.\d+)?$/.test(String(v))?(/FINANC|SALDO|LIQUID|VALOR|DOTA/i.test(k)?brl(+v):nf.format(+v)):String(v)])].map(([k,v])=>`<div><dt>${k}</dt><dd title="${esc(v)}">${esc(v)}</dd></div>`).join('')}</dl></section>
+     <section class="ft-res"><h5><span>1</span>Resumo no SIPLAM</h5><dl>${[...res,...(px.acao?[['Ação orçamentária',px.acao]]:[]),...(px.liqm?[['Liquidações monitoradas',brl(px.liqm)]]:[]),...(px.realInf||px.real?[['Realizado na consolidação',nf.format(px.real||0)+((px.real||0)===e.fisAc?' (confere com o SIPLAM)':' (SIPLAM: '+nf.format(e.fisAc)+')')]]:[]),...(!px.dot&&px.dotInf?[['Dotação autorizada','R$ 0,00']]:[]),...Object.entries(px.x||{}).filter(([k])=>!X_OCULTO.test(k)).map(([k,v])=>[k.charAt(0)+k.slice(1).toLowerCase(),/^-?\d+(\.\d+)?$/.test(String(v))&&!/EXERC/i.test(k)?(/FINANC|SALDO|LIQUID|VALOR|DOTA/i.test(k)?brl(+v):nf.format(+v)):String(v)])].map(([k,v])=>`<div><dt>${k}</dt><dd title="${esc(v)}">${esc(v)}</dd></div>`).join('')}</dl></section>
      <section class="ft-num"><h5><span>2</span>Números até ${MESESL[S.cyc-1].toLowerCase()}</h5>
        <div class="ftn"><span>Físico realizado</span><b>${nf.format(e.fisAc)} <em>${esc(umTxt(e.um,e.fisAc))}</em></b>${p.meta?`<em class="ft-meta">Meta pactuada: <b>${nf.format(p.meta)}</b></em><span class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></span><small class="${pm<100?'twn':'tok'}">${pm}% do pactuado entregue</small>`:`<small class="t-sub">Meta pactuada não informada. Importe o print ou a planilha com a coluna PREVISTO.</small>`}<small class="t-sub">${e.acum==='S'?'Meta acumulativa: soma dos meses':'Meta não acumulativa: vale a posição mais alta no ano'}${e.nloc>1?` · ${e.nloc} municípios/localidades`:''}</small></div>
-       <div class="ftn"><span>Financeiro</span>${p.dot?`<b>${brlC(e.liq)} <em>de ${brlC(p.dot)} de dotação</em></b><span class="mbar ${pl<90?'w':''}"><i style="width:${Math.min(100,pl)}%"></i></span><small class="${pl<90?'twn':'tok'}">${pl}% liquidado${e.saldo>0?` · saldo a distribuir ${brlC(e.saldo)}`:''}</small>`:e.liq>0?`<b>${brlC(e.liq)} <em>liquidado</em></b><small class="t-sub">Dotação própria não informada</small>`:`<b>R$ 0</b><small class="t-sub">Entrega sem dotação própria. A execução financeira fica na ação orçamentária da iniciativa.</small>`}</div>
+       <div class="ftn"><span>Financeiro</span>${p.dot?`<b>${brlC(e.liq)} <em>de ${brlC(p.dot)} de dotação</em></b><span class="mbar ${pl<90?'w':''}"><i style="width:${Math.min(100,pl)}%"></i></span><small class="${pl<90?'twn':'tok'}">${pl}% liquidado${e.saldo>0?` · saldo a distribuir ${brlC(e.saldo)}`:''}</small>`:e.liq>0?`<b>${brlC(e.liq)} <em>liquidado</em></b><small class="t-sub">Dotação própria não informada</small>`:(()=>{ const gs=gestaoDe(E.filter(x=>x.ini===e.ini&&x.org===e.org)); return gs&&gs!==e?`<b>R$ 0 <em>próprio</em></b><small class="t-sub">Serviço ligado à gestão da iniciativa. A execução financeira está na entrega de gestão <span class="mono">${gs.cod}</span> (${p0(gs)}).</small>`:`<b>R$ 0</b><small class="t-sub">Entrega sem dotação própria. A execução financeira fica na ação orçamentária da iniciativa.</small>`; })()}</div>
        ${fis.length?`<div class="ftn spk"><span>Físico mês a mês</span><div class="spk2" style="grid-template-columns:repeat(${fis.length},1fr)">${fis.map((v,i)=>`<div class="sk" title="${MESESL[i]}: ${nf.format(v)}"><em>${v?(v>=10000?nf.format(Math.round(v/1000))+' mil':nf.format(v)):''}</em><i style="height:${v?Math.max(4,Math.round(42*v/mx)):2}px;${v?'':'opacity:.25'}"></i><small>${MESES[i]}</small></div>`).join('')}</div></div>`:''}</section>
    </div>
    <div class="f-main">
@@ -3060,12 +3069,12 @@ function impSiplam(wb,X,cod){
         const si=N(g(r,'SITUACAO DO INSTITUCIONAL')); if(si) inst=/PARCIAL/.test(si)?'Parcial':/^OK|COMPLET/.test(si)?'Completo':'Não preenchido'; }
       e.nloc++; const loc=String(g(r,'LOCALIDADE')).trim(); if(loc&&!e._locs.includes(loc)) e._locs.push(loc);
       MESES_UP.forEach((m,i)=>{ e.fis[i]+=numBR(g(r,'FISICO '+m)); e.fin[i]+=numBR(g(r,'FINANCEIRO '+m)); });
-      Object.keys(H).forEach(k=>{ if(KNOWN.has(k)) return; const v=g(r,k); if(v===''||v==null) return; const sv=String(v).trim(); if(!sv) return; const lb=LBL[k]; if(e._x[lb]==null) e._x[lb]=sv; else if(!String(e._x[lb]).split(' · ').includes(sv)&&String(e._x[lb]).length<300) e._x[lb]+=' · '+sv; });
+      Object.keys(H).forEach(k=>{ if(KNOWN.has(k)||X_OCULTO.test(k)||k==='REGIAO LOCALIDADE') return; const v=g(r,k); if(v===''||v==null) return; const sv=String(v).trim(); if(!sv) return; const lb=LBL[k]; if(e._x[lb]==null) e._x[lb]=sv; else if(!String(e._x[lb]).split(' · ').includes(sv)&&String(e._x[lb]).length<300) e._x[lb]+=' · '+sv; });
     }
     if(!ent.size) return {erro:`Este arquivo não tem entregas de ${OB[cod].sig}.${outros.size?` Órgãos encontrados: ${[...outros].slice(0,5).join('; ')}.`:''}`};
     const novas=[], upd=[];
     ent.forEach(e=>{ e.fis=e.fis.map(x=>Math.round(x*100)/100); e.fin=e.fin.map(x=>Math.round(x*100)/100);
-      const x={...e._x}; if(e._locs.length) x['Localidades']=e._locs.length>6?`${e._locs.length} localidades (${e._locs.slice(0,6).join(', ')}…)`:e._locs.join(', ');
+      const x={...e._x};
       delete e._x; delete e._locs; if(Object.keys(x).length){ prev[e.cod]={...(prev[e.cod]||{}),x}; }
       if(!EBY[e.cod]) novas.push(e); else upd.push(e); });
     const nt=Object.keys(txt).length, np=Object.values(prev).filter(v=>v.meta||v.dot).length;
@@ -3085,8 +3094,8 @@ async function impFile(f){
     <div class="imp-l">${[...r.novas.map(e=>[e,'Nova entrega']),...(r.upd||[]).filter(e=>ch.ents.has(e.cod)).map(e=>[e,`Atualiza: ${[...new Set(ch.list.filter(c=>c.cod===e.cod).map(c=>c.campo))].slice(0,5).join(', ')}`])].slice(0,60).map(([e,t])=>`<div><span class="mono">${e.cod}</span><b>${esc(e.nome)}</b><small>${esc(t)}</small></div>`).join('')||'<div class="t-sub">Nada mudou em relação ao que já está no sistema.</div>'}</div>`;
   $('#impOk').disabled=!(r.novas.length||ch.n);
 }
-const IMP_NUM={liq:'Liquidado total',saldo:'Saldo a distribuir',um:'Unidade de medida',cls:'Classificação',tipo:'Tipo do produto',acum:'Acumula meta',estr:'Estratégia de monitoramento',stm:'Status do monitoramento',dini:'Data de início',dfim:'Data de fim',nome:'Nome da entrega',inome:'Nome da iniciativa',pnome:'Nome do programa',nloc:'Nº de localidades'};
-const IMP_PREV={meta:'Meta prevista',dot:'Dotação autorizada',est:'Estimado PPA',liqm:'Liquidações monitoradas',real:'Realizado (consolidação)',acao:'Ação orçamentária'};
+const IMP_NUM={liq:'Liquidado total',saldo:'Saldo a distribuir',um:'Unidade de medida',cls:'Classificação',tipo:'Tipo do produto',acum:'Acumula meta',stm:'Status do monitoramento',nome:'Nome da entrega',inome:'Nome da iniciativa',pnome:'Nome do programa',nloc:'Nº de localidades'};
+const IMP_PREV={meta:'Meta prevista',dot:'Dotação autorizada',liqm:'Liquidações monitoradas',real:'Realizado (consolidação)',acao:'Ação orçamentária'};
 function impDiff(r){ const list=[]; const add=(cod,campo,de,para,org)=>list.push({cod,campo,de,para,org});
   (r.upd||[]).forEach(ne=>{ const e=EBY[ne.cod]; if(!e) return;
     Object.entries(IMP_NUM).forEach(([k,l])=>{ if(ne[k]!=null&&ne[k]!==''&&String(ne[k])!==String(e[k]??'')) add(ne.cod,l,e[k]??'',ne[k]); });
