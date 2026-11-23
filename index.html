@@ -1778,7 +1778,7 @@ function fresh(){
 }
 function load(){ return fresh(); }
 S=load(); S.ck=S.ck||{}; S.txtImp=S.txtImp||{}; S.prevImp=S.prevImp||{}; S.extraE=S.extraE||[]; S.anx=S.anx||{};
-function addExtraE(x){ if(EBY[x.cod]) return; const e={...x}; e.fisAc=e.acum==='S'?e.fis.reduce((s,v)=>s+v,0):Math.max(0,...e.fis); e.fisOut=e.fis[CUR-1]||0; E.push(e); EBY[e.cod]=e; (EBO[e.org]=EBO[e.org]||[]).push(e); }
+function addExtraE(x){ if(EBY[x.cod]){ const o=EBY[x.cod]; Object.assign(o,x); const f=o.fis.slice(0,CUR); o.fisAc=o.acum==='S'?f.reduce((s,v)=>s+v,0):Math.max(0,...f); o.fisOut=o.fis[CUR-1]||0; return; } const e={...x}; e.fisAc=e.acum==='S'?e.fis.reduce((s,v)=>s+v,0):Math.max(0,...e.fis); e.fisOut=e.fis[CUR-1]||0; E.push(e); EBY[e.cod]=e; (EBO[e.org]=EBO[e.org]||[]).push(e); }
 S.extraE.forEach(addExtraE);
 let OB={};
 function index(){ OB=Object.fromEntries(S.orgs.map(o=>[o.cod,o])); S.orgs.forEach(o=>o.nent=(EBO[o.cod]||[]).length); S.H.forEach(h=>{ if(h.org==null) h.org=orgOf(h); }); }
@@ -3029,8 +3029,8 @@ function openImport(cod,ini){
   const o=OB[cod]; ui.imp={cod,ini:ini||null,res:null};
   $('#modalBox').className='mb lg';
   $('#modalBox').innerHTML=`<h3>${ic('db',18)} Importar planilha · ${esc(o.sig)}${ini?` · iniciativa ${ini}`:''}</h3>
-   <p>Aceita a <b>planilha do órgão</b> (relatório do SIPLAM com a consolidação analítica, uma linha por entrega) ou a <b>planilha de governança</b> (aba do órgão). O que vier na planilha e não estiver no sistema é adicionado: entregas, físico e financeiro mês a mês, meta e dotação, textos do órgão e qualquer outra coluna. O que já está preenchido no sistema não é apagado.</p>
-   <label class="drop"><input type="file" id="impF" accept=".xlsx,.xls,.xml,.csv" data-imp="1"><span>${ic('plus',18)} Escolher arquivo</span><small>As análises que você já fez só são substituídas nas entregas que vierem preenchidas na planilha.</small></label>
+   <p>Envie a <b>planilha do órgão</b>: uma aba, uma linha por entrega, no modelo do relatório do SIPLAM com a consolidação analítica. Entregas novas são criadas, e números, meta, dotação, textos do órgão e qualquer outra coluna são atualizados com os valores da planilha. Cada valor que mudar fica no histórico com o valor anterior.</p>
+   <label class="drop"><input type="file" id="impF" accept=".xlsx,.xls,.xml,.csv" data-imp="1"><span>${ic('plus',18)} Escolher arquivo</span><small>Os dados do SIPLAM são atualizados com os valores desta planilha. A análise dos monitores não é alterada.</small></label>
    <div id="impRes"></div>
    <div class="act"><button class="btn" data-act="mClose">Cancelar</button><button class="btn pri" id="impOk" data-act="impApply" disabled>Importar</button></div>`;
   $('#modal').classList.add('show');
@@ -3074,25 +3074,37 @@ function impSiplam(wb,X,cod){
   return null;
 }
 async function impFile(f){
-  const box=$('#impRes'); box.innerHTML='<p class="t-sub">Lendo o arquivo…</p>'; let rows=[]; let pre=null;
-  try{ if(/\.csv$/i.test(f.name)) rows=csvRows(await f.text()); else { const X=await loadXLSX(); const wb=X.read(await f.arrayBuffer(),{type:'array'}); const o=OB[ui.imp.cod]; pre=impSiplam(wb,X,ui.imp.cod); if(!pre){ const K=x=>semAcento(x).toUpperCase().replace(/[^A-Z]/g,''); const al=[o.sig,...(SHEET_ALIAS[o.sig]||[])].map(K); const nm=wb.SheetNames.find(n=>al.includes(K(n)))||(wb.SheetNames.length===1?wb.SheetNames[0]:null); if(!nm){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não achei a aba de ${esc(o.sig)} na planilha. Abas encontradas: ${esc(wb.SheetNames.slice(0,40).join(', '))}.</span></div>`; return; } rows=X.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}); } } }
-  catch(e){ console.error(e); box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não consegui abrir o arquivo. Se for .xlsx sem internet, salve a aba como .csv e tente de novo.</span></div>`; return; }
-  const r=pre||impParse(rows,ui.imp.cod,ui.imp.ini); ui.imp.res=r;
-  if(r.erro){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>${esc(r.erro)}</span></div>`; return; }
-  box.innerHTML=`<div class="imp-sum">${r.extra?`${esc(r.extra)}${r.upd?.length?` · <b>${r.upd.length}</b> já existe(m) e será(ão) completada(s)`:''} · `:''}${r.novas.length?`<b>${r.novas.length}</b> entrega(s) nova(s) serão criadas · `:''}${r.extra?'':`<b>${r.ok.length}</b> entrega(s) com análise para importar`}${r.inst?` · institucional: <b>${esc(r.inst)}</b>`:''}${r.ign.length?` · <span class="twn">${r.ign.length} código(s) não pertencem a este órgão${ui.imp.ini?'/iniciativa':''} e serão ignorados</span>`:''}</div>
-    <div class="imp-l">${(r.extra?[...r.novas,...(r.upd||[])]:[]).slice(0,40).map(e=>`<div><span class="mono">${e.cod}</span><b>${esc(e.nome)}</b><small>${EBY[e.cod]?'Já existe: completa o que faltar':'Nova entrega'} · iniciativa ${e.ini}</small></div>`).join('')}${r.ok.slice(0,40).map(x=>`<div><span class="mono">${x.e.cod}</span><b>${esc(x.e.nome)}</b><small>${x.fin?(x.aj?'Finalizada · com ajuste':'Finalizada · OK'):'Em andamento'}${x.ql?' · '+esc(x.ql.slice(0,80)):''}</small></div>`).join('')}</div>`;
-  $('#impOk').disabled=!(r.ok.length||r.novas.length||r.inst||r.extra);
+  const box=$('#impRes'); box.innerHTML='<p class="t-sub">Lendo o arquivo…</p>'; let r=null;
+  try{ const X=await loadXLSX(); const wb=X.read(await f.arrayBuffer(),{type:'array'}); r=impSiplam(wb,X,ui.imp.cod); }
+  catch(e){ console.error(e); box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não consegui abrir o arquivo. Confira se é .xlsx, .xls, .xml ou .csv.</span></div>`; return; }
+  if(!r) r={erro:'Esta planilha não está no modelo do GEMONIT. Ela precisa ter uma aba com as colunas ÓRGÃO, PROGRAMA, INICIATIVA e ENTREGA (uma linha por entrega), como o relatório de monitoramento do SIPLAM.'};
+  ui.imp.res=r;
+  if(r.erro){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>${esc(r.erro)}</span></div>`; $('#impOk').disabled=true; return; }
+  const ch=impDiff(r); ui.imp.diff=ch;
+  box.innerHTML=`<div class="imp-sum">${esc(r.extra)}<br>${r.novas.length?`<b>${r.novas.length}</b> entrega(s) nova(s) · `:''}<b>${ch.ents.size}</b> entrega(s) com dados que mudaram · <b>${ch.n}</b> valor(es) a atualizar</div>
+    <div class="imp-l">${[...r.novas.map(e=>[e,'Nova entrega']),...(r.upd||[]).filter(e=>ch.ents.has(e.cod)).map(e=>[e,`Atualiza: ${[...new Set(ch.list.filter(c=>c.cod===e.cod).map(c=>c.campo))].slice(0,5).join(', ')}`])].slice(0,60).map(([e,t])=>`<div><span class="mono">${e.cod}</span><b>${esc(e.nome)}</b><small>${esc(t)}</small></div>`).join('')||'<div class="t-sub">Nada mudou em relação ao que já está no sistema.</div>'}</div>`;
+  $('#impOk').disabled=!(r.novas.length||ch.n);
 }
-function impApply(){ const r=ui.imp?.res; if(!r) return; const cod=ui.imp.cod;
-  if(r.novas.length){ r.novas.forEach(ne=>{ if(!EBY[ne.cod]){ S.extraE.push(ne); addExtraE(ne); } }); index(); audit('orgao',cod,`${OB[cod].sig} · entregas`,'Criação',[{campo:'Entregas criadas pela planilha',de:'',para:r.novas.map(x=>x.cod).join(', ')}],cod); }
-  const fill=(a,b)=>{ Object.keys(b).forEach(k=>{ const v=a[k], w=b[k]; const vazio=v==null||v===''||v===0||(Array.isArray(v)&&!v.some(Boolean)); if(vazio&&w!=null&&w!=='') a[k]=w; }); };
-  (r.upd||[]).forEach(ne=>{ const e=EBY[ne.cod]; if(!e) return; const ex=S.extraE.find(x=>x.cod===ne.cod); if(ex){ fill(ex,ne); } fill(e,ne); const f=e.fis.slice(0,CUR); e.fisAc=e.acum==='S'?f.reduce((s,v)=>s+v,0):Math.max(0,...f); e.fisOut=e.fis[CUR-1]||0; });
-  Object.entries(r.prev||{}).forEach(([k,v])=>{ const o=S.prevImp[k]||{}; const n={...o}; Object.entries(v).forEach(([kk,vv])=>{ if(kk==='x') n.x={...(o.x||{}),...vv}; else if(!o[kk]) n[kk]=vv; }); S.prevImp[k]=n; });
-  const tk=Object.entries(r.txt||{}).filter(([k,v])=>!S.txtImp[k]); tk.forEach(([k,v])=>S.txtImp[k]=v);
-  if(r.extra) audit('orgao',cod,`${OB[cod].sig} · importação`,'Edição',[{campo:'Planilha importada',de:'',para:`${r.extra}${tk.length?` · ${tk.length} texto(s) novo(s)`:''}`}],cod);
-  if(r.inst){ const c=S.ciclos[CUR][cod]; if(c&&c.inst!==r.inst){ const v0=c.inst; c.inst=r.inst; audit('ciclo',`${CUR}:${cod}`,`${OB[cod].sig} · institucional`,'Edição',[{campo:'Texto institucional',de:v0,para:r.inst,k:'inst',v0}],cod); } }
-  r.ok.forEach(x=>{ const ch=[]; const a=S.an[x.e.cod]||{}; if(x.ql&&x.ql!==a.ql) ch.push({campo:'Análise qualitativa',de:a.ql||'',para:x.ql}); if(x.qt&&x.qt!==a.qt) ch.push({campo:'Análise quantitativa',de:a.qt||'',para:x.qt}); const patch={}; if(x.ql) patch.ql=x.ql; if(x.qt) patch.qt=x.qt; if(x.fin){ patch.fin=true; patch.aj=x.aj; ch.push({campo:'Finalizada',de:a.fin?'Sim':'Não',para:'Sim (importado)'}); } entSet(x.e.cod,patch,ch.length?ch:[{campo:'Importação',de:'',para:'planilha'}]); });
-  $('#modal').classList.remove('show'); render(true); save(); toast(`Planilha importada: ${r.novas.length} entrega(s) nova(s)${r.upd?.length?`, ${r.upd.length} completada(s)`:''}${r.ok.length?`, ${r.ok.length} análise(s)`:''}. Tudo ficou no histórico.`); }
+const IMP_NUM={liq:'Liquidado total',saldo:'Saldo a distribuir',um:'Unidade de medida',cls:'Classificação',tipo:'Tipo do produto',acum:'Acumula meta',estr:'Estratégia de monitoramento',stm:'Status do monitoramento',dini:'Data de início',dfim:'Data de fim',nome:'Nome da entrega',inome:'Nome da iniciativa',pnome:'Nome do programa',nloc:'Nº de localidades'};
+const IMP_PREV={meta:'Meta prevista',dot:'Dotação autorizada',est:'Estimado PPA',liqm:'Liquidações monitoradas',real:'Realizado (consolidação)',acao:'Ação orçamentária'};
+function impDiff(r){ const list=[]; const add=(cod,campo,de,para,org)=>list.push({cod,campo,de,para,org});
+  (r.upd||[]).forEach(ne=>{ const e=EBY[ne.cod]; if(!e) return;
+    Object.entries(IMP_NUM).forEach(([k,l])=>{ if(ne[k]!=null&&ne[k]!==''&&String(ne[k])!==String(e[k]??'')) add(ne.cod,l,e[k]??'',ne[k]); });
+    ['fis','fin'].forEach(k=>ne[k].forEach((v,i)=>{ const o=(e[k]||[])[i]||0; if(Math.abs(v-o)>0.004) add(ne.cod,`${k==='fis'?'Físico':'Financeiro'} ${MESESL[i].toLowerCase()}`,o,v); })); });
+  Object.entries(r.prev||{}).forEach(([cod,v])=>{ const o=S.prevImp[cod]||{}; Object.entries(IMP_PREV).forEach(([k,l])=>{ if(v[k]!=null&&String(v[k])!==String(o[k]??'')) add(+cod,l,o[k]??'',v[k]); });
+    Object.entries(v.x||{}).forEach(([k,val])=>{ if(String(val)!==String((o.x||{})[k]??'')) add(+cod,k,(o.x||{})[k]??'',val); }); });
+  Object.entries(r.txt||{}).forEach(([k,v])=>{ if(v!==S.txtImp[k]) add(k,k.startsWith('inst:')?'Institucional · '+(INST_F.find(f=>f.id===k.split(':')[2])?.t||''):k.startsWith('ini:')?'Descrição analítica da iniciativa':'Resultado das entregas (texto do órgão)',S.txtImp[k]??'',v); });
+  return {list,n:list.length,ents:new Set(list.filter(c=>typeof c.cod==='number').map(c=>c.cod))}; }
+function impApply(){ const r=ui.imp?.res; if(!r||r.erro) return; const cod=ui.imp.cod; const sig=OB[cod].sig; const d=ui.imp.diff||impDiff(r);
+  r.novas.forEach(ne=>{ if(!EBY[ne.cod]){ S.extraE.push(ne); addExtraE(ne); } });
+  if(r.novas.length) audit('orgao',cod,`${sig} · entregas`,'Criação',[{campo:'Entregas criadas pela planilha',de:'',para:r.novas.map(x=>x.cod).join(', ')}],cod);
+  (r.upd||[]).forEach(ne=>{ const e=EBY[ne.cod]; if(!e) return; const i=S.extraE.findIndex(x=>x.cod===ne.cod); const keep={...ne}; if(i>-1) S.extraE[i]=keep; else S.extraE.push(keep); Object.assign(e,ne); const f=e.fis.slice(0,CUR); e.fisAc=e.acum==='S'?f.reduce((s,v)=>s+v,0):Math.max(0,...f); e.fisOut=e.fis[CUR-1]||0; });
+  Object.entries(r.prev||{}).forEach(([k,v])=>{ const o=S.prevImp[k]||{}; S.prevImp[k]={...o,...v,x:{...(o.x||{}),...(v.x||{})}}; });
+  Object.entries(r.txt||{}).forEach(([k,v])=>S.txtImp[k]=v);
+  const fmt=v=>typeof v==='number'?nf.format(v):String(v??'');
+  d.list.forEach(c=>{ const isE=typeof c.cod==='number'; audit('orgao',cod,isE?`Entrega ${c.cod} · ${sig}`:`${sig} · textos do SIPLAM`,'Atualização (planilha)',[{campo:c.campo,de:fmt(c.de).slice(0,400),para:fmt(c.para).slice(0,400)}],cod); });
+  index(); $('#modal').classList.remove('show'); render(true); save();
+  toast(`Planilha importada: ${r.novas.length} entrega(s) nova(s), ${d.n} valor(es) atualizado(s). Tudo ficou no histórico.`); }
 
 /* ===== Anexos (imagens, PDF, documentos) ===== */
 let ANX={};
