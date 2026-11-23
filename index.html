@@ -2540,10 +2540,10 @@ function entDet(e,a,dec,ro){
   const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0)), pl=p.dot?Math.round(100*e.liq/p.dot):null; const k=String(e.cod);
   const sec=(n,t,body,cls='')=>`<section class="fs ${cls}"><h5><span>${n}</span>${t}</h5>${body}</section>`;
   const fis=(e.fis||[]).slice(0,S.cyc), mx=Math.max(1,...fis);
-  const res=[['Programa',e.prog?`${e.prog} · ${e.pnome}`:'—'],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não'],['Regionalização',`${(e.estr||'').toLowerCase()}${e.nloc?` · ${e.nloc} loc.`:''}`],['Período',`${e.dini||'—'}${e.dfim?' a '+e.dfim:''}`]];
+  const px=previsto(e); const res=[['Programa',e.prog?`${e.prog} · ${e.pnome}`:'—'],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não'],['Regionalização',`${(e.estr||'').toLowerCase()}${e.nloc?` · ${e.nloc} loc.`:''}`],['Período',`${e.dini||'—'}${e.dfim?' a '+e.dfim:''}`]];
   return `<div class="adet ficha2">
    <div class="f-top">
-     <section class="ft-res"><h5><span>1</span>Resumo no SIPLAM</h5><dl>${res.map(([k,v])=>`<div><dt>${k}</dt><dd title="${esc(v)}">${esc(v)}</dd></div>`).join('')}</dl></section>
+     <section class="ft-res"><h5><span>1</span>Resumo no SIPLAM</h5><dl>${[...res,...(px.acao?[['Ação orçamentária',px.acao]]:[]),...(px.est?[['Estimado PPA',brl(px.est)]]:[]),...(px.liqm?[['Liquidações monitoradas',brl(px.liqm)]]:[]),...(px.real&&px.real!==e.fisAc?[['Realizado na consolidação',nf.format(px.real)+' (SIPLAM: '+nf.format(e.fisAc)+')']]:[]),...Object.entries(px.x||{}).map(([k,v])=>[k.charAt(0)+k.slice(1).toLowerCase(),/^-?\d+(\.\d+)?$/.test(String(v))?(/FINANC|SALDO|LIQUID|VALOR|DOTA/i.test(k)?brl(+v):nf.format(+v)):String(v)])].map(([k,v])=>`<div><dt>${k}</dt><dd title="${esc(v)}">${esc(v)}</dd></div>`).join('')}</dl></section>
      <section class="ft-num"><h5><span>2</span>Números até ${MESESL[S.cyc-1].toLowerCase()}</h5>
        <div class="ftn"><span>Físico</span><b>${nf.format(e.fisAc)} <em>de ${fmtMeta(p.meta)} ${esc((e.um||'').toLowerCase())}</em></b><span class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></span><small class="${pm<100?'twn':'tok'}">${p.meta?`${pm}% do pactuado entregue`:'meta pactuada não importada'}${e.nloc>1?` · soma dos ${e.nloc} municípios/localidades`:''}</small></div>
        <div class="ftn"><span>Financeiro</span>${p.dot?`<b>${brlC(e.liq)} <em>de ${brlC(p.dot)}</em></b><span class="mbar ${pl<90?'w':''}"><i style="width:${Math.min(100,pl)}%"></i></span><small class="${pl<90?'twn':'tok'}">${pl}% liquidado${e.saldo>0?` · saldo ${brlC(e.saldo)}`:''}</small>`:'<b class="t-sub" style="font-size:13px">Sem dotação própria</b>'}</div>
@@ -3006,7 +3006,7 @@ function impParse(rows,cod,ini){
   if(h<0) return {erro:'Não encontrei a linha de títulos (precisa ter as colunas ENTREGA e ANÁLISE QUALITATIVA, como na aba do órgão da planilha).'};
   const H=rows[h].map(N); const col=f=>H.findIndex(f);
   const cE=col(x=>x.startsWith('entrega')), cQl=col(x=>x.includes('qualitativa')), cQt=col(x=>x.includes('quantitativa')), cF=col(x=>x.includes('finalizada')), cD=col(x=>x.includes('data da analise'));
-  const ok=[],ign=[],novas=[]; const ents=(EBO[cod]||[]).filter(e=>!ini||e.ini===ini);
+  const ok=[],ign=[],novas=[],ux={}; const ents=(EBO[cod]||[]).filter(e=>!ini||e.ini===ini);
   const cI=col(x=>x.startsWith('iniciativa')); let iniAt=null; let inst=null;
   rows.slice(0,h).forEach(r=>{ const i=r.findIndex(c=>N(c).trim()==='institucional'); if(i>-1){ const v=N(r[i+1]).trim(); if(v) inst=/parcial/.test(v)?'Parcial':/^ok|complet/.test(v)?'Completo':'Não preenchido'; } });
   const cn=v=>{ const m=String(v??'').replace(/\s+/g,' ').trim().match(/^(\d{3,6})\s*-?\s*(.*)$/); return m?[+m[1],m[2].trim()]:null; };
@@ -3016,35 +3016,79 @@ function impParse(rows,cod,ini){
       const nm=cn(r[cE])?.[1]||''; const ii=iniAt||[ini||0,'']; e=novas.find(x=>x.cod===+m[1]);
       if(!e){ e={cod:+m[1],nome:nm.toUpperCase(),org:cod,ini:ii[0],inome:String(ii[1]).toUpperCase(),prog:0,pnome:'',um:'',cls:'',tipo:'',acum:'N',estr:'',liq:0,saldo:0,fis:Array(12).fill(0),fin:Array(12).fill(0),stm:'',nloc:0,dini:'',dfim:'',origem:'planilha'}; novas.push(e); } }
     const ql=String(r[cQl]??'').trim(), qt=cQt>-1?String(r[cQt]??'').trim():'', fin=cF>-1&&/^(1|s|sim|x|ok)$/i.test(String(r[cF]??'').trim());
+    const xx={}; rows[h].forEach((hd,i)=>{ if([cE,cQl,cQt,cF,cD,cI].includes(i)) return; const v=String(r[i]??'').trim(); if(v&&String(hd).trim()) xx[String(hd).replace(/\s+/g,' ').trim()]=v; }); if(Object.keys(xx).length) (ux[e.cod]=ux[e.cod]||{}), Object.assign(ux[e.cod],xx);
     if(ql||qt||fin) ok.push({e,ql,qt,fin,aj:fin&&!!ql&&!/\bok\b/i.test(ql)}); });
-  return {ok,ign,novas,inst};
+  const prev={}; Object.entries(ux).forEach(([k,x])=>prev[k]={x}); return {ok,ign,novas,inst,prev};
 }
 const SHEET_ALIAS={'CASA CIVIL':['CASA_CIVIL'],'VICE-GOV':['VICE_GOV'],'LAGO AZUL':['LAGO_AZUL'],PMGO:['PM'],CBMGO:['CBM'],PCGO:['PC'],MPGO:['MP'],'DPE-GO':['DEFENSORIA'],TJGO:['TJ'],'TCM-GO':['TCM'],'TCE-GO':['TCE']};
 function openImport(cod,ini){
   const o=OB[cod]; ui.imp={cod,ini:ini||null,res:null};
   $('#modalBox').className='mb lg';
   $('#modalBox').innerHTML=`<h3>${ic('db',18)} Importar planilha · ${esc(o.sig)}${ini?` · iniciativa ${ini}`:''}</h3>
-   <p>Envie a planilha de governança (.xlsx) ou a aba do órgão (.csv). O sistema acha a aba do órgão e lê <b>INICIATIVA</b>, <b>ENTREGAS</b>, <b>Análise qualitativa</b>, <b>Análise quantitativa</b>, <b>Finalizada (1)</b> e a linha <b>INSTITUCIONAL</b>. Entregas que ainda não estão no sistema são criadas.</p>
-   <label class="drop"><input type="file" id="impF" accept=".xlsx,.xls,.csv" data-imp="1"><span>${ic('plus',18)} Escolher arquivo</span><small>As análises que você já fez só são substituídas nas entregas que vierem preenchidas na planilha.</small></label>
+   <p>Aceita a <b>planilha do órgão</b> (relatório do SIPLAM com a consolidação analítica, uma linha por entrega) ou a <b>planilha de governança</b> (aba do órgão). O que vier na planilha e não estiver no sistema é adicionado: entregas, físico e financeiro mês a mês, meta e dotação, textos do órgão e qualquer outra coluna. O que já está preenchido no sistema não é apagado.</p>
+   <label class="drop"><input type="file" id="impF" accept=".xlsx,.xls,.xml,.csv" data-imp="1"><span>${ic('plus',18)} Escolher arquivo</span><small>As análises que você já fez só são substituídas nas entregas que vierem preenchidas na planilha.</small></label>
    <div id="impRes"></div>
    <div class="act"><button class="btn" data-act="mClose">Cancelar</button><button class="btn pri" id="impOk" data-act="impApply" disabled>Importar</button></div>`;
   $('#modal').classList.add('show');
 }
+function impSiplam(wb,X,cod){
+  const N=x=>semAcento(String(x??'')).toUpperCase().replace(/\s+/g,' ').trim();
+  const cnp=v=>{ const s=String(v??'').replace(/\s+/g,' ').trim(); const m=s.match(/^(\d{2,6})\s*-\s*(.*)$/)||s.match(/^(\d{2,6})\s+(.*)$/); return m?[+m[1],m[2].trim()]:[0,s]; };
+  const IF={'GESTOR':'gestor','ASPECTOS GERAIS':'sintese','ENTREGAS RELEVANTES':'entregas','PREMIACOES':'premios','POSSUI PEI':'pei','OUTROS INSTRUMENTOS':'instr','PRINCIPAIS INDICADORES':'indic','RESPONSAVEL PELO PLANEJAMENTO':'resp'};
+  const KNOWN=new Set(['EXERCICIO','PROGRAMA','INICIATIVA','ORGAO','ENTREGA','DATA INICIO ENTREGA','DATA FIM ENTREGA','UNIDADE MEDIDA','CLASSIFICACAO PRODUTO','TIPO DO PRODUTO','ACUMULA META FISICA ANO','LIQUIDADO TOTAL','SALDO DISTRIBUIR','ESTRATEGIA DE MONITORAMENTO','STATUS MONITORAMENTO','PREVISTO','ESTIMADO PPA','DOTACAO AUTORIZADA','LIQUIDACOES MONITORADAS','REALIZADO','ACAO ORCAMENTARIA','RESULTADO DAS ENTREGAS/ACOES','RESULTADO DA INICIATIVA','OBSERVACOES DA INICIATIVA','SITUACAO DO INSTITUCIONAL','LOCALIDADE','FISICO TOTAL LOCALIDADE','FINANCEIRO TOTAL LOCALIDADE',...Object.keys(IF),...MESES_UP.flatMap(m=>['FISICO '+m,'FINANCEIRO '+m])]);
+  for(const n of wb.SheetNames){
+    const rows=X.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:true});
+    const hi=rows.slice(0,20).findIndex(r=>{ const h=r.map(N); return h.includes('ORGAO')&&h.includes('ENTREGA')&&h.includes('INICIATIVA'); }); if(hi<0) continue;
+    const H={}, LBL={}; rows[hi].forEach((c,i)=>{ const k=N(c); if(k&&!(k in H)){ H[k]=i; LBL[k]=String(c).replace(/\s+/g,' ').trim(); } });
+    const g=(r,k)=>k in H?r[H[k]]:''; const txt={}, prev={}, ent=new Map(), outros=new Set(); let inst=null;
+    for(const r of rows.slice(hi+1)){ if(!String(g(r,'ENTREGA')).trim()) continue;
+      let [oc]=cnp(g(r,'ORGAO')); oc=ORG_ALIAS[oc]||oc; if(oc!==cod){ outros.add(String(g(r,'ORGAO'))); continue; }
+      const [ec,en]=cnp(g(r,'ENTREGA')); if(!ec) continue; let e=ent.get(ec);
+      if(!e){ const [ic2,inm]=cnp(g(r,'INICIATIVA')), [pc,pnm]=cnp(g(r,'PROGRAMA'));
+        e={cod:ec,nome:en.toUpperCase(),org:cod,ini:ic2,inome:inm.toUpperCase(),prog:pc,pnome:pnm.toUpperCase(),um:String(g(r,'UNIDADE MEDIDA')),cls:String(g(r,'CLASSIFICACAO PRODUTO')),tipo:String(g(r,'TIPO DO PRODUTO')),acum:/^S/i.test(String(g(r,'ACUMULA META FISICA ANO')).trim())?'S':'N',estr:String(g(r,'ESTRATEGIA DE MONITORAMENTO')),liq:numBR(g(r,'LIQUIDADO TOTAL')),saldo:numBR(g(r,'SALDO DISTRIBUIR')),fis:Array(12).fill(0),fin:Array(12).fill(0),stm:String(g(r,'STATUS MONITORAMENTO')),nloc:0,dini:String(g(r,'DATA INICIO ENTREGA')),dfim:String(g(r,'DATA FIM ENTREGA')),origem:'planilha',_locs:[],_x:{}};
+        ent.set(ec,e);
+        const pv={meta:numBR(g(r,'PREVISTO')),dot:numBR(g(r,'DOTACAO AUTORIZADA')),est:numBR(g(r,'ESTIMADO PPA')),liqm:numBR(g(r,'LIQUIDACOES MONITORADAS')),real:numBR(g(r,'REALIZADO')),acao:String(g(r,'ACAO ORCAMENTARIA')).trim()};
+        Object.keys(pv).forEach(k=>{ if(!pv[k]) delete pv[k]; }); if(Object.keys(pv).length) prev[ec]=pv;
+        const tr=String(g(r,'RESULTADO DAS ENTREGAS/ACOES')).trim(); if(tr) txt['ent:'+ec]=tr;
+        const ti=String(g(r,'RESULTADO DA INICIATIVA')).trim(); if(ti&&ic2) txt[`ini:${ic2}:impacto`]=ti;
+        const to=String(g(r,'OBSERVACOES DA INICIATIVA')).trim(); if(to&&ic2) txt[`ini:${ic2}:obs`]=to;
+        Object.entries(IF).forEach(([k,id])=>{ const v=String(g(r,k)).trim(); if(v) txt[`inst:${cod}:${id}`]=v; });
+        const si=N(g(r,'SITUACAO DO INSTITUCIONAL')); if(si) inst=/PARCIAL/.test(si)?'Parcial':/^OK|COMPLET/.test(si)?'Completo':'Não preenchido'; }
+      e.nloc++; const loc=String(g(r,'LOCALIDADE')).trim(); if(loc&&!e._locs.includes(loc)) e._locs.push(loc);
+      MESES_UP.forEach((m,i)=>{ e.fis[i]+=numBR(g(r,'FISICO '+m)); e.fin[i]+=numBR(g(r,'FINANCEIRO '+m)); });
+      Object.keys(H).forEach(k=>{ if(KNOWN.has(k)) return; const v=g(r,k); if(v===''||v==null) return; const sv=String(v).trim(); if(!sv||sv==='0') return; const lb=LBL[k]; if(e._x[lb]==null) e._x[lb]=sv; else if(!String(e._x[lb]).split(' · ').includes(sv)&&String(e._x[lb]).length<300) e._x[lb]+=' · '+sv; });
+    }
+    if(!ent.size) return {erro:`Este arquivo não tem entregas de ${OB[cod].sig}.${outros.size?` Órgãos encontrados: ${[...outros].slice(0,5).join('; ')}.`:''}`};
+    const novas=[], upd=[];
+    ent.forEach(e=>{ e.fis=e.fis.map(x=>Math.round(x*100)/100); e.fin=e.fin.map(x=>Math.round(x*100)/100);
+      const x={...e._x}; if(e._locs.length) x['Localidades']=e._locs.length>6?`${e._locs.length} localidades (${e._locs.slice(0,6).join(', ')}…)`:e._locs.join(', ');
+      delete e._x; delete e._locs; if(Object.keys(x).length){ prev[e.cod]={...(prev[e.cod]||{}),x}; }
+      if(!EBY[e.cod]) novas.push(e); else upd.push(e); });
+    const nt=Object.keys(txt).length, np=Object.values(prev).filter(v=>v.meta||v.dot).length;
+    return {ok:[],ign:[],novas,upd,inst,txt,prev,extra:`${ent.size} entrega(s) com físico e financeiro mês a mês${np?` · ${np} com meta/dotação`:''}${nt?` · ${nt} texto(s) do órgão`:''}${outros.size?` · linhas de outros órgãos ignoradas`:''}`};
+  }
+  return null;
+}
 async function impFile(f){
-  const box=$('#impRes'); box.innerHTML='<p class="t-sub">Lendo o arquivo…</p>'; let rows=[];
-  try{ if(/\.csv$/i.test(f.name)) rows=csvRows(await f.text()); else { const X=await loadXLSX(); const wb=X.read(await f.arrayBuffer()); const o=OB[ui.imp.cod]; const K=x=>semAcento(x).toUpperCase().replace(/[^A-Z]/g,''); const al=[o.sig,...(SHEET_ALIAS[o.sig]||[])].map(K); const nm=wb.SheetNames.find(n=>al.includes(K(n)))||(wb.SheetNames.length===1?wb.SheetNames[0]:null); if(!nm){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não achei a aba de ${esc(o.sig)} na planilha. Abas encontradas: ${esc(wb.SheetNames.slice(0,40).join(', '))}.</span></div>`; return; } rows=X.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}); } }
-  catch(e){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não consegui abrir o arquivo. Se for .xlsx sem internet, salve a aba como .csv e tente de novo.</span></div>`; return; }
-  const r=impParse(rows,ui.imp.cod,ui.imp.ini); ui.imp.res=r;
+  const box=$('#impRes'); box.innerHTML='<p class="t-sub">Lendo o arquivo…</p>'; let rows=[]; let pre=null;
+  try{ if(/\.csv$/i.test(f.name)) rows=csvRows(await f.text()); else { const X=await loadXLSX(); const wb=X.read(await f.arrayBuffer(),{type:'array'}); const o=OB[ui.imp.cod]; pre=impSiplam(wb,X,ui.imp.cod); if(!pre){ const K=x=>semAcento(x).toUpperCase().replace(/[^A-Z]/g,''); const al=[o.sig,...(SHEET_ALIAS[o.sig]||[])].map(K); const nm=wb.SheetNames.find(n=>al.includes(K(n)))||(wb.SheetNames.length===1?wb.SheetNames[0]:null); if(!nm){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não achei a aba de ${esc(o.sig)} na planilha. Abas encontradas: ${esc(wb.SheetNames.slice(0,40).join(', '))}.</span></div>`; return; } rows=X.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}); } } }
+  catch(e){ console.error(e); box.innerHTML=`<div class="banner">${ic('risk',16)}<span>Não consegui abrir o arquivo. Se for .xlsx sem internet, salve a aba como .csv e tente de novo.</span></div>`; return; }
+  const r=pre||impParse(rows,ui.imp.cod,ui.imp.ini); ui.imp.res=r;
   if(r.erro){ box.innerHTML=`<div class="banner">${ic('risk',16)}<span>${esc(r.erro)}</span></div>`; return; }
-  box.innerHTML=`<div class="imp-sum">${r.novas.length?`<b>${r.novas.length}</b> entrega(s) nova(s) serão criadas · `:''}<b>${r.ok.length}</b> entrega(s) com análise para importar${r.inst?` · institucional: <b>${esc(r.inst)}</b>`:''}${r.ign.length?` · <span class="twn">${r.ign.length} código(s) não pertencem a este órgão${ui.imp.ini?'/iniciativa':''} e serão ignorados</span>`:''}</div>
-    <div class="imp-l">${r.ok.slice(0,40).map(x=>`<div><span class="mono">${x.e.cod}</span><b>${esc(x.e.nome)}</b><small>${x.fin?(x.aj?'Finalizada · com ajuste':'Finalizada · OK'):'Em andamento'}${x.ql?' · '+esc(x.ql.slice(0,80)):''}</small></div>`).join('')}</div>`;
-  $('#impOk').disabled=!(r.ok.length||r.novas.length||r.inst);
+  box.innerHTML=`<div class="imp-sum">${r.extra?`${esc(r.extra)}${r.upd?.length?` · <b>${r.upd.length}</b> já existe(m) e será(ão) completada(s)`:''} · `:''}${r.novas.length?`<b>${r.novas.length}</b> entrega(s) nova(s) serão criadas · `:''}${r.extra?'':`<b>${r.ok.length}</b> entrega(s) com análise para importar`}${r.inst?` · institucional: <b>${esc(r.inst)}</b>`:''}${r.ign.length?` · <span class="twn">${r.ign.length} código(s) não pertencem a este órgão${ui.imp.ini?'/iniciativa':''} e serão ignorados</span>`:''}</div>
+    <div class="imp-l">${(r.extra?[...r.novas,...(r.upd||[])]:[]).slice(0,40).map(e=>`<div><span class="mono">${e.cod}</span><b>${esc(e.nome)}</b><small>${EBY[e.cod]?'Já existe: completa o que faltar':'Nova entrega'} · iniciativa ${e.ini}</small></div>`).join('')}${r.ok.slice(0,40).map(x=>`<div><span class="mono">${x.e.cod}</span><b>${esc(x.e.nome)}</b><small>${x.fin?(x.aj?'Finalizada · com ajuste':'Finalizada · OK'):'Em andamento'}${x.ql?' · '+esc(x.ql.slice(0,80)):''}</small></div>`).join('')}</div>`;
+  $('#impOk').disabled=!(r.ok.length||r.novas.length||r.inst||r.extra);
 }
 function impApply(){ const r=ui.imp?.res; if(!r) return; const cod=ui.imp.cod;
   if(r.novas.length){ r.novas.forEach(ne=>{ if(!EBY[ne.cod]){ S.extraE.push(ne); addExtraE(ne); } }); index(); audit('orgao',cod,`${OB[cod].sig} · entregas`,'Criação',[{campo:'Entregas criadas pela planilha',de:'',para:r.novas.map(x=>x.cod).join(', ')}],cod); }
+  const fill=(a,b)=>{ Object.keys(b).forEach(k=>{ const v=a[k], w=b[k]; const vazio=v==null||v===''||v===0||(Array.isArray(v)&&!v.some(Boolean)); if(vazio&&w!=null&&w!=='') a[k]=w; }); };
+  (r.upd||[]).forEach(ne=>{ const e=EBY[ne.cod]; if(!e) return; const ex=S.extraE.find(x=>x.cod===ne.cod); if(ex){ fill(ex,ne); } fill(e,ne); const f=e.fis.slice(0,CUR); e.fisAc=e.acum==='S'?f.reduce((s,v)=>s+v,0):Math.max(0,...f); e.fisOut=e.fis[CUR-1]||0; });
+  Object.entries(r.prev||{}).forEach(([k,v])=>{ const o=S.prevImp[k]||{}; const n={...o}; Object.entries(v).forEach(([kk,vv])=>{ if(kk==='x') n.x={...(o.x||{}),...vv}; else if(!o[kk]) n[kk]=vv; }); S.prevImp[k]=n; });
+  const tk=Object.entries(r.txt||{}).filter(([k,v])=>!S.txtImp[k]); tk.forEach(([k,v])=>S.txtImp[k]=v);
+  if(r.extra) audit('orgao',cod,`${OB[cod].sig} · importação`,'Edição',[{campo:'Planilha importada',de:'',para:`${r.extra}${tk.length?` · ${tk.length} texto(s) novo(s)`:''}`}],cod);
   if(r.inst){ const c=S.ciclos[CUR][cod]; if(c&&c.inst!==r.inst){ const v0=c.inst; c.inst=r.inst; audit('ciclo',`${CUR}:${cod}`,`${OB[cod].sig} · institucional`,'Edição',[{campo:'Texto institucional',de:v0,para:r.inst,k:'inst',v0}],cod); } }
   r.ok.forEach(x=>{ const ch=[]; const a=S.an[x.e.cod]||{}; if(x.ql&&x.ql!==a.ql) ch.push({campo:'Análise qualitativa',de:a.ql||'',para:x.ql}); if(x.qt&&x.qt!==a.qt) ch.push({campo:'Análise quantitativa',de:a.qt||'',para:x.qt}); const patch={}; if(x.ql) patch.ql=x.ql; if(x.qt) patch.qt=x.qt; if(x.fin){ patch.fin=true; patch.aj=x.aj; ch.push({campo:'Finalizada',de:a.fin?'Sim':'Não',para:'Sim (importado)'}); } entSet(x.e.cod,patch,ch.length?ch:[{campo:'Importação',de:'',para:'planilha'}]); });
-  $('#modal').classList.remove('show'); render(true); save(); toast(`Planilha importada: ${r.novas.length} entrega(s) criada(s), ${r.ok.length} análise(s). Tudo ficou no histórico.`); }
+  $('#modal').classList.remove('show'); render(true); save(); toast(`Planilha importada: ${r.novas.length} entrega(s) nova(s)${r.upd?.length?`, ${r.upd.length} completada(s)`:''}${r.ok.length?`, ${r.ok.length} análise(s)`:''}. Tudo ficou no histórico.`); }
 
 /* ===== Anexos (imagens, PDF, documentos) ===== */
 let ANX={};
