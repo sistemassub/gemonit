@@ -1706,6 +1706,22 @@ body:not(.out){zoom:var(--z)}
 .quote{white-space:pre-line}.da{margin-top:10px}.ficha2 .da .quote{max-height:none}.da summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
 .gst-box{border:1px solid var(--line-2);border-radius:14px;padding:10px 12px;background:var(--surface-2);margin-bottom:12px}.gst-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:2px 2px 8px}.gst-h b{font-size:13px}.gst-h small{font-size:12px;color:var(--muted)}
 .gst-l{margin:10px 0 2px 18px;padding-left:14px;border-left:2px solid var(--line)}.gst-lh{font-size:12px;font-weight:600;color:var(--muted);margin:0 0 6px;display:flex;align-items:center;gap:6px}
+.ficha3{display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;border-top:1px solid var(--line-2);background:var(--surface-2);border-radius:0 0 14px 14px}
+.f3{background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:14px 16px;min-width:0}
+.f3>h6{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--ink);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.f3>h6 small{font-weight:400;color:var(--muted);font-size:12px}
+.f3-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.f3-k>div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:var(--surface-2);min-width:0}
+.f3-k small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.f3-k b{font-family:var(--display);font-size:20px;line-height:1.2}.f3-k b.nd{color:var(--faint)}.f3-k span{font-size:12px;color:var(--muted)}.f3-k .mbar{display:block;margin-top:6px}
+.f3-m{margin-top:12px}.f3-m>small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.f3-bars{display:grid;gap:6px;align-items:end;height:72px;margin-top:6px;max-width:720px}.f3-bars>div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0}
+.f3-bars i{display:block;width:100%;border-radius:3px;background:var(--grad)}.f3-bars em{font-style:normal;font-size:10px;color:var(--muted);white-space:nowrap}.f3-bars span{font-size:10px;color:var(--faint);margin-top:2px}
+.f3-txt{white-space:pre-line;font-size:13.5px;line-height:1.6;max-width:95ch}
+.f3-da{margin-top:10px}.f3-da summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--brand,#009E3C)}.f3-da .f3-txt{margin-top:8px;padding:10px 12px;background:var(--surface-2);border-radius:10px}
+.f3-t{display:grid;grid-template-columns:minmax(150px,230px) 1fr;margin:0;border-top:1px solid var(--line-2)}
+.f3-t dt,.f3-t dd{margin:0;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:13px}.f3-t dt{color:var(--muted);padding-right:16px}.f3-t dd{white-space:pre-line;max-width:95ch}
+.f3-an{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}.f3-an textarea{min-height:110px}
+.f3-me{border-color:var(--ink)}
+@media(max-width:640px){.f3-t{grid-template-columns:1fr}.f3-t dt{border-bottom:0;padding-bottom:0}}
 .lg-load{color:#fff;opacity:.8;font-size:14px;text-align:center;margin-top:40vh}
 </style>
 </head>
@@ -2549,33 +2565,51 @@ function entRow(e,ro){
 }
 const umTxt=(u,v)=>{ const t=String(u||'').toLowerCase().replace('numero','número'); return t==='unidade'&&v!==1?'unidades':t; };
 function entDet(e,a,dec,ro){
-  const txt=entTexto(e); const pv=SEED.anPrev[e.cod]; const allck=dec==='ok'&&!Object.keys(a.ck||{}).length; const dis=ro?'disabled':''; const p=previsto(e);
-  const pm=(p.meta?Math.round(100*e.fisAc/(p.meta||1)):(e.fisAc>0?100:0)), pl=p.dot?Math.round(100*e.liq/p.dot):null; const k=String(e.cod);
-  const sec=(n,t,body,cls='')=>`<section class="fs ${cls}"><h5><span>${n}</span>${t}</h5>${body}</section>`;
+  const txt=entTexto(e); const pv=SEED.anPrev[e.cod]; const dis=ro?'disabled':''; const p=previsto(e); const k=String(e.cod);
+  const pm=p.meta?Math.round(100*e.fisAc/p.meta):null, pl=p.dot?Math.round(100*e.liq/p.dot):null;
   const fis=(e.fis||[]).slice(0,S.cyc), mx=Math.max(1,...fis);
-  const px=previsto(e); const _gs=gestaoDe(E.filter(x=>x.ini===e.ini&&x.org===e.org)); const res=[...(_gs?[['Papel na iniciativa',_gs===e?'Gestão da iniciativa (concentra o financeiro)':`Serviço ligado à gestão ${_gs.cod}`]]:[]),['Programa',e.prog?`${e.prog} · ${e.pnome}`:'—'],['Iniciativa',`${e.ini} · ${e.inome}`],['Situação',e.stm||'—'],['Tipo',[e.cls,e.tipo].filter(Boolean).join(' · ').toLowerCase()],['Unidade',(e.um||'').toLowerCase()],['Acumulativa',e.acum==='S'?'Sim':'Não']];
-  return `<div class="adet ficha2">
-   <div class="f-top">
-     <section class="ft-res"><h5><span>1</span>Resumo no SIPLAM</h5><dl>${[...res,...(px.acao?[['Ação orçamentária',px.acao]]:[]),...(px.liqm?[['Liquidações monitoradas',brl(px.liqm)]]:[]),...(px.realInf||px.real?[['Realizado na consolidação',nf.format(px.real||0)+((px.real||0)===e.fisAc?' (confere com o SIPLAM)':' (SIPLAM: '+nf.format(e.fisAc)+')')]]:[]),...(!px.dot&&px.dotInf?[['Dotação autorizada','R$ 0,00']]:[]),...Object.entries(px.x||{}).filter(([k])=>!X_OCULTO.test(k)).map(([k,v])=>[k.charAt(0)+k.slice(1).toLowerCase(),/^-?\d+(\.\d+)?$/.test(String(v))&&!/EXERC/i.test(k)?(/FINANC|SALDO|LIQUID|VALOR|DOTA/i.test(k)?brl(+v):nf.format(+v)):String(v)])].map(([k,v])=>`<div><dt>${k}</dt><dd title="${esc(v)}">${esc(v)}</dd></div>`).join('')}</dl></section>
-     <section class="ft-num"><h5><span>2</span>Números até ${MESESL[S.cyc-1].toLowerCase()}</h5>
-       <div class="ftn"><span>Físico realizado</span><b>${nf.format(e.fisAc)} <em>${esc(umTxt(e.um,e.fisAc))}</em></b>${p.meta?`<em class="ft-meta">Meta pactuada: <b>${nf.format(p.meta)}</b></em><span class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></span><small class="${pm<100?'twn':'tok'}">${pm}% do pactuado entregue</small>`:`<small class="t-sub">Meta pactuada não informada. Importe o print ou a planilha com a coluna PREVISTO.</small>`}<small class="t-sub">${e.acum==='S'?'Meta acumulativa: soma dos meses':'Meta não acumulativa: vale a posição mais alta no ano'}${e.nloc>1?` · ${e.nloc} municípios/localidades`:''}</small></div>
-       <div class="ftn"><span>Financeiro</span>${p.dot?`<b>${brlC(e.liq)} <em>de ${brlC(p.dot)} de dotação</em></b><span class="mbar ${pl<90?'w':''}"><i style="width:${Math.min(100,pl)}%"></i></span><small class="${pl<90?'twn':'tok'}">${pl}% liquidado${e.saldo>0?` · saldo a distribuir ${brlC(e.saldo)}`:''}</small>`:e.liq>0?`<b>${brlC(e.liq)} <em>liquidado</em></b><small class="t-sub">Dotação própria não informada</small>`:(()=>{ const gs=gestaoDe(E.filter(x=>x.ini===e.ini&&x.org===e.org)); return gs&&gs!==e?`<b>R$ 0 <em>próprio</em></b><small class="t-sub">Serviço ligado à gestão da iniciativa. A execução financeira está na entrega de gestão <span class="mono">${gs.cod}</span> (${p0(gs)}).</small>`:`<b>R$ 0</b><small class="t-sub">Entrega sem dotação própria. A execução financeira fica na ação orçamentária da iniciativa.</small>`; })()}</div>
-       ${fis.length?`<div class="ftn spk"><span>Físico mês a mês</span><div class="spk2" style="grid-template-columns:repeat(${fis.length},1fr)">${fis.map((v,i)=>`<div class="sk" title="${MESESL[i]}: ${nf.format(v)}"><em>${v?(v>=10000?nf.format(Math.round(v/1000))+' mil':nf.format(v)):''}</em><i style="height:${v?Math.max(4,Math.round(42*v/mx)):2}px;${v?'':'opacity:.25'}"></i><small>${MESES[i]}</small></div>`).join('')}</div></div>`:''}</section>
-   </div>
-   <div class="f-main">
-     <div class="fcol">
-       <section class="fs"><h5><span>3</span>Resultado das entregas/ações (texto do órgão)</h5><div class="quote">${txt?esc(txt):'Sem texto. Importe o print do SIPLAM ou a planilha.'}</div>${iniTexto(e.ini,'impacto')?`<details class="da" open><summary>Descrição analítica da iniciativa ${e.ini}</summary><div class="quote">${esc(iniTexto(e.ini,'impacto'))}</div></details>`:''}${pv?`<div class="prevline"><span>No ciclo anterior você marcou <b>${pv.aj?'ajuste':'OK'}</b> · ${esc(pv.ql)}</span>${ro?'':`<button type="button" class="btn sm" data-act="reuse2:${e.cod}">Usar de novo</button>`}</div>`:''}</section>
-       <section class="fs fs-ia"><h5><span>4</span>Pré-análise com IA</h5>${iaBox(k,ro)}</section>
-       <section class="fs">${anxBox('ent:'+e.cod,ro,'Anexos da entrega')}</section>
+  const gs=gestaoDe(E.filter(x=>x.ini===e.ini&&x.org===e.org));
+  const fmtX=(k,v)=>/^-?\d+(\.\d+)?$/.test(String(v))&&!/EXERC/i.test(k)?(/FINANC|SALDO|LIQUID|VALOR|DOTA/i.test(k)?brl(+v):nf.format(+v)):String(v);
+  const cap=t=>/\./.test(t)?t:t.charAt(0)+t.slice(1).toLowerCase();
+  const dados=[
+    ...(gs?[['Papel na iniciativa',gs===e?'Gestão da iniciativa: concentra a execução financeira':`Serviço ligado à gestão ${gs.cod} · ${gs.nome}`]]:[]),
+    ['Programa',e.prog?`${e.prog} · ${e.pnome}`:'—'],['Iniciativa',`${e.ini} · ${e.inome}`],
+    ['Tipo',[e.cls,e.tipo].filter(Boolean).map(cap).join(' · ')||'—'],['Unidade de medida',umTxt(e.um,2)||'—'],['Meta acumulativa',e.acum==='S'?'Sim (soma dos meses)':'Não (vale a posição mais alta no ano)'],['Status do monitoramento',cap(e.stm||'—')],
+    ...(p.acao?[['Ação orçamentária',p.acao]]:[]),
+    ...(p.realInf||p.real?[['Realizado na consolidação',nf.format(p.real||0)+((p.real||0)===e.fisAc?' (confere com o relatório do SIPLAM)':` (relatório do SIPLAM: ${nf.format(e.fisAc)})`)]]:[]),
+    ...Object.entries(p.x||{}).filter(([kk])=>!X_OCULTO.test(kk)).map(([kk,v])=>[cap(kk),fmtX(kk,v)])];
+  const finTxt=p.dot?{v:brlC(e.liq),s:`liquidado de ${brlC(p.dot)} de dotação`,pct:pl}
+    :e.liq>0?{v:brlC(e.liq),s:'liquidado · dotação própria não informada'}
+    :gs&&gs!==e?{v:'R$ 0',s:`próprio · o financeiro está na gestão ${gs.cod} (${p0(gs)})`}:{v:'R$ 0',s:'sem dotação própria'};
+  return `<div class="adet ficha3">
+   <section class="f3"><h6>Números até ${MESESL[S.cyc-1].toLowerCase()}</h6>
+     <div class="f3-k">
+       <div><small>Físico realizado</small><b>${nf.format(e.fisAc)}</b><span>${esc(umTxt(e.um,e.fisAc))}</span></div>
+       <div><small>Meta pactuada</small>${p.meta?`<b>${nf.format(p.meta)}</b><span class="${pm<100?'twn':'tok'}">${pm}% entregue</span><i class="mbar ${pm<100?'w':''}"><i style="width:${Math.min(100,pm)}%"></i></i>`:`<b class="nd">—</b><span>não informada</span>`}</div>
+       <div><small>Financeiro</small><b>${finTxt.v}</b><span>${esc(finTxt.s)}</span>${finTxt.pct!=null?`<i class="mbar ${finTxt.pct<90?'w':''}"><i style="width:${Math.min(100,finTxt.pct)}%"></i></i>`:''}</div>
+       ${e.saldo>0||p.liqm?`<div><small>${e.saldo>0?'Saldo a distribuir':'Liquidações monitoradas'}</small><b>${brlC(e.saldo>0?e.saldo:p.liqm)}</b><span>${e.saldo>0?'nos meses':'no exercício'}</span></div>`:''}
      </div>
-     <section class="fs fs-me"><h5><span>5</span>Sua análise</h5>
-       <details class="hintc"><summary>${ic('info',13)} O que o SIPLAM pede neste campo</summary><div>${esc(ENT_HINT)}</div></details>
-       <div class="fgroup"><label>Análise qualitativa <small>${dec==='aj'?'vai para a devolutiva':'críticas e observações sobre o texto'}</small></label><textarea ${dis} data-ef="${e.cod}|ql" placeholder="O texto atende? O que falta?">${esc(a.ql||'')}</textarea></div>
-       <div class="fgroup"><label>Análise quantitativa <small>críticas e observações sobre os números</small></label><textarea ${dis} data-ef="${e.cod}|qt" placeholder="Ex.: realizado abaixo da meta sem justificativa; saldo a distribuir.">${esc(a.qt||'')}</textarea></div>
-       <div class="fdone"><span>Decisão:</span>${decBtns(`data-edec2="${e.cod}" data-v`,dec,ro)}${ro?'':`<button type="button" class="btn ghost sm" data-act="newPen:${e.org}:${e.cod}">${ic('risk',13)} Registrar pendência</button>`}</div>
-       <div class="fplan"><b>Planilha</b>${[['Data',a.data?fdate(a.data):''],['Qualitativa',a.ql],['Quantitativa',a.qt],['Finalizada',a.fin?'Sim':'']].map(([l,v])=>`<span class="${v?'ok':''}">${v?ic('check',11):''}${l}</span>`).join('')}</div>
-     </section>
-   </div></div>`;
+     ${fis.length?`<div class="f3-m"><small>Físico mês a mês</small><div class="f3-bars" style="grid-template-columns:repeat(${fis.length},1fr)">${fis.map((v,i)=>`<div title="${MESESL[i]}: ${nf.format(v)}"><em>${v?(v>=10000?nf.format(Math.round(v/1000))+' mil':nf.format(v)):''}</em><i style="height:${v?Math.max(4,Math.round(40*v/mx)):2}px;${v?'':'opacity:.25'}"></i><span>${MESES[i]}</span></div>`).join('')}</div></div>`:''}
+   </section>
+   <section class="f3"><h6>Resultado das entregas/ações <small>texto do órgão no SIPLAM</small></h6>
+     <div class="f3-txt">${txt?esc(txt):'<span class="t-sub">Sem texto. Importe a planilha do órgão.</span>'}</div>
+     ${iniTexto(e.ini,'impacto')?`<details class="f3-da" open><summary>Descrição analítica da iniciativa ${e.ini}</summary><div class="f3-txt">${esc(iniTexto(e.ini,'impacto'))}</div></details>`:''}
+   </section>
+   <section class="f3"><h6>Dados do SIPLAM</h6>
+     <dl class="f3-t">${dados.map(([l,v])=>`<dt>${esc(l)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+   </section>
+   <section class="f3 f3-ia">${iaBox(k,ro)}</section>
+   <section class="f3">${anxBox('ent:'+e.cod,ro,'Anexos da entrega')}</section>
+   <section class="f3 f3-me"><h6>Sua análise</h6>
+     ${pv?`<div class="prevline"><span>No ciclo anterior você marcou <b>${pv.aj?'ajuste':'OK'}</b> · ${esc(pv.ql)}</span>${ro?'':`<button type="button" class="btn sm" data-act="reuse2:${e.cod}">Usar de novo</button>`}</div>`:''}
+     <details class="hintc"><summary>${ic('info',13)} O que o SIPLAM pede neste campo</summary><div>${esc(ENT_HINT)}</div></details>
+     <div class="f3-an">
+       <div class="fgroup"><label>Análise qualitativa <small>${dec==='aj'?'vai para a devolutiva':'sobre o texto'}</small></label><textarea ${dis} data-ef="${e.cod}|ql" placeholder="O texto atende? O que falta?">${esc(a.ql||'')}</textarea></div>
+       <div class="fgroup"><label>Análise quantitativa <small>sobre os números</small></label><textarea ${dis} data-ef="${e.cod}|qt" placeholder="Ex.: realizado abaixo da meta sem justificativa; saldo a distribuir.">${esc(a.qt||'')}</textarea></div>
+     </div>
+     <div class="fdone"><span>Decisão:</span>${decBtns(`data-edec2="${e.cod}" data-v`,dec,ro)}${ro?'':`<button type="button" class="btn ghost sm" data-act="newPen:${e.org}:${e.cod}">${ic('risk',13)} Registrar pendência</button>`}</div>
+   </section>
+  </div>`;
 }
 function entSet(cod,patch,campos){ const e=EBY[cod]; const old=S.an[cod]||{}; if(campos) campos=campos.map(c=>({...c,snap:JSON.parse(JSON.stringify(old))})); S.an[cod]={ql:'',qt:'',adeq:'',cat:'',aj:false,fin:false,ck:{},...old,...patch,data:hoje(),por:S.user}; if(campos&&campos.length) audit('analise',cod,`Entrega ${cod} · ${OB[e.org].sig}`,old.fin?'Edição':'Criação',campos,e.org); save(); }
 function entDecide(cod,v){
